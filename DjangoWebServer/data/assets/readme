@@ -1,0 +1,4 @@
+new assets creation and initialization data are in this folder. They are named after their index.
+note that creation and initialization data object are different in the former one is [asset_name, Asset], and the latter one is only Asset
+
+move the asset data files out of this folder when they are used

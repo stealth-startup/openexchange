@@ -1,0 +1,96 @@
+from openexchangelib import util
+from openexchangelib.types import OEBaseException
+import os
+from types import ExchangeServer
+
+data_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data')
+ASSET_FOLDER = os.path.join(data_path, 'assets')
+BLOCK_FOLDER = os.path.join(data_path, 'block')
+BLOCK144_FOLDER = os.path.join(data_path, 'block144')
+
+
+class AssetDataFileNotExistError(OEBaseException):
+    pass
+
+
+def load_data(index, base):
+    file_name = os.path.join(base, str(index))
+    if not os.path.isfile(file_name):
+        raise AssetDataFileNotExistError(index = index)
+    return util.load_obj(os.path.join(ASSET_FOLDER, str(index)))
+
+
+def save_data(obj, index, base):
+    file_name = os.path.join(base, str(index))
+    return util.save_obj(obj, file_name)
+
+
+def asset_creation_data(index):
+    """
+    :type index: int
+    :rtype: tuple of (str, Asset)
+    """
+    return load_data(index, ASSET_FOLDER)
+
+
+def asset_initialize_data(index):
+    """
+    different asset should use different index, so there's no need to have asset_name known
+    :type index: int
+    :rtype: Asset
+    """
+    return load_data(index, ASSET_FOLDER)
+
+
+def block_data(index):
+    return load_data(index, BLOCK_FOLDER)
+
+
+def block144_data(index):
+    return load_data(index, BLOCK144_FOLDER)
+
+
+def _data_file_max_index(base):
+    indexes = [int(f) for f in os.listdir(base) if os.path.isfile(os.path.join(base, f)) and f.isdigit()]
+    if not indexes:
+        return None
+    else:
+        return max(indexes)
+
+
+def load_exchange():
+    """
+    :rtype: ExchangeServer
+    """
+    max_index = _data_file_max_index(BLOCK_FOLDER)
+    if max_index is None:
+        return None
+    else:
+        return block_data(max_index)
+
+
+def save_exchange(exchange):
+    """
+    :type exchange: ExchangeServer
+    """
+    logger = util.get_logger('exchange_server')
+
+    height = exchange.exchange.processed_block_height
+    save_data(exchange, height, BLOCK_FOLDER)
+
+    if height % 144 == 0:
+        save_data(exchange, height, BLOCK144_FOLDER)
+        util.write_log(logger, 'exchange is also saved to %s' % BLOCK144_FOLDER)
+
+    height_to_clean = height - 144  # only keep at most 144 files in block folder
+    file_to_clean = os.path.join(BLOCK_FOLDER, str(height_to_clean))
+    if os.path.isfile(file_to_clean):
+        os.remove(file_to_clean)
+        util.write_log(logger, '%d is removed' % height_to_clean)
+
+    util.write_log(logger, 'exchange saved. height: %d' % exchange.exchange.processed_block_height)
+
+
+def assets_data():
+    indexes = [int(f) for f in os.listdir(ASSET_FOLDER) if os.path.isfile(os.path.join(ASSET_FOLDER, f)) and f.isdigit()]
+    return {index: util.load_obj(os.path.join(ASSET_FOLDER, str(index))) for index in indexes}

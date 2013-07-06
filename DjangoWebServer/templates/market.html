@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Market{% endblock %}
+
+{% block menu_market %} class="active" {% endblock %}
+
+{% block page_content %}
+    <div class="container">
+        <div class="marketing" style="padding-top: 50px; padding-bottom: 50px">
+            {% for asset_row in asset_rows %}
+                <div class="row-fluid">
+
+                    {% for asset in asset_row %}
+                        <div class="span4" style="padding: 10px; border: solid 1px #eee">
+                            <div>
+                                <a href="{{ asset.url }}">
+                                    <img src="{{ asset.img_url }}" alt="{{ asset.name }}" />
+                                </a>
+                                <a href="{{ asset.url }}" style="text-decoration: none">
+                                   <h4> {{ asset.name }} </h4>
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

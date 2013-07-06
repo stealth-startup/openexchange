@@ -1,0 +1,2 @@
+contains all server data when the height of the block % 144 == 0
+in average, this folder will has one more object per day

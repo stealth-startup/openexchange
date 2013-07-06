@@ -1,0 +1,537 @@
+{% extends "base.html" %}
+
+{% block title %} OpenExchange - {{ asset_name }} {% endblock %}
+
+{% block page_content %}
+    <div class="container" style="padding-top: 50px">
+        <div class="row">
+            <div class="span8">
+                <div class="row"> <!-- left panel -->
+                    <!-- chart -->
+                    <div id="asset_chart" style="height:400px;" class="span8">
+                    </div>
+                    <!-- balance -->
+                    <div id="balance" class="span8" style="margin-top: 20px; margin-bottom: 4px;">
+                            <div class="label" style="font-size: 16px; line-height: 26px; display: block">
+                                Your balance:
+                                <span class="hidden -logged-in"></span>
+                                <span class="hidden -logged-out" style="font-size: 14px">
+                                    <em> N/A</em>
+                                </span>
+                            </div>
+                    </div>
+
+                    <!-- Limit orders and Market orders -->
+                    <ul class="nav nav-tabs">
+                        <li><a href="#limit_orders" data-toggle="tab">Limit Orders</a></li>
+                        <li><a href="#market_orders" data-toggle="tab">Market Orders</a></li>
+                    </ul>
+                    <div class="tab-content">
+                        <div class="tab-pane active" id="limit_orders">  <!-- limit orders -->
+                            <!-- limit buy form -->
+                            <div class="span4" id="limit_buy_form">
+                                <div class="boundary">
+                                    <div class="widget_title">Limit Buy</div>
+                                    <form class="form-horizontal">
+                                        <div class="control-group">
+                                            <label class="control-label" for="limit_buy_amount" style="width: 80px">Amount</label>
+                                            <div class="controls" style="margin-left: 100px">
+                                                <input type="text" id="limit_buy_amount" placeholder="0" value="0" style="width: 150px">
+                                            </div>
+                                        </div>
+                                        <div class="control-group">
+                                            <label class="control-label" for="limit_buy_price" style="width: 80px">Unit Price</label>
+                                            <div class="controls" style="margin-left: 100px">
+                                                <div class="input-append">
+                                                    <input type="text" id="limit_buy_price" placeholder="0" value="0" style="width: 150px">
+                                                    <span class="add-on">BTC</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="-message">
+                                            <p class="label label-info info_buysell hidden -success">
+                                                Send <span class="-payment" style="font-weight: 600"></span> BTC to
+                                                <span style="font-weight: 600">{{ limit_buy_address }}</span> for buying.
+                                                After your order is confirmed, it will be listed in the order book for execution,
+                                                and the change of <span class="-change" style="font-weight: 600"></span>
+                                                BTC will be sent back to you.
+                                            </p>
+                                            <p class="badge badge-warning info_buysell hidden -error"></p>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            <!-- limit sell form -->
+                            <div class="span4" id="limit_sell_form">
+                                <div class="boundary">
+                                    <div class="widget_title">Limit Sell</div>
+                                    <form class="form-horizontal">
+                                        <div class="control-group">
+                                            <label class="control-label" for="limit_sell_amount" style="width: 80px">Amount</label>
+                                            <div class="controls" style="margin-left: 100px">
+                                                <input type="text" id="limit_sell_amount" placeholder="0" value="0" style="width: 150px">
+                                            </div>
+                                        </div>
+                                        <div class="control-group">
+                                            <label class="control-label" for="limit_sell_price" style="width: 80px">Unit Price</label>
+                                            <div class="controls" style="margin-left: 100px">
+                                                <div class="input-append">
+                                                    <input type="text" id="limit_sell_price" placeholder="0" value="0" style="width: 150px">
+                                                    <span class="add-on">BTC</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="-message">
+                                            <p class="label label-info info_buysell hidden -success">
+                                                Send <span class="-payment" style="font-weight: 600"></span> BTC to
+                                                <span style="font-weight: 600">{{ limit_sell_address }}</span> for selling.
+                                                After your order is confirmed, it will be listed the order book for execution,
+                                                and the change of <span class="-change" style="font-weight: 600"></span>
+                                                BTC will be sent back to you.
+                                            </p>
+                                            <p class="badge badge-warning info_buysell hidden -error"></p>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane" id="market_orders"> <!-- market orders -->
+                            <!-- market buy form -->
+                            <div class="span4" id="market_buy_form">
+                                <div class="boundary">
+                                    <div class="widget_title">Market Buy</div>
+                                    <form class="form-horizontal">
+                                        <div class="control-group">
+                                            <label class="control-label" for="market_buy_total" style="width: 80px">Total Invest</label>
+                                            <div class="controls" style="margin-left: 100px">
+                                                <div class="input-append">
+                                                    <input type="text" id="market_buy_total" placeholder="0" value="0" style="width: 150px">
+                                                    <span class="add-on">BTC</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="-message">
+                                            <p class="label label-info info_buysell hidden -success">
+                                                Send <span class="-payment" style="font-weight: 600"></span> BTC to
+                                                <span style="font-weight: 600">{{ market_buy_address }}</span> for buying at the market price.
+                                                After your order is confirmed, it will be executed immediately,
+                                                and the change will be sent back to you.
+                                            </p>
+                                            <p class="badge badge-warning info_buysell hidden -error"></p>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            <!-- market sell form -->
+                            <div class="span4" id="market_sell_form">
+                                <div class="boundary">
+                                    <div class="widget_title">Market Sell</div>
+                                    <form class="form-horizontal">
+                                        <div class="control-group">
+                                            <label class="control-label" for="market_sell_amount" style="width: 80px">Amount</label>
+                                            <div class="controls" style="margin-left: 100px">
+                                                <input type="text" id="market_sell_amount" placeholder="0" value="0" style="width: 150px">
+                                            </div>
+                                        </div>
+                                        <div class="-message">
+                                            <p class="label label-info info_buysell hidden -success">
+                                                Send <span class="-payment" style="font-weight: 600"></span> BTC to
+                                                <span style="font-weight: 600">{{ market_sell_address }}</span> for selling.
+                                                After your order is confirmed, it will be executed immediately,
+                                                and the change of <span class="-change" style="font-weight: 600"></span>
+                                                BTC will be sent back to you.
+                                            </p>
+                                            <p class="badge badge-warning info_buysell hidden -error"></p>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="span8" style="margin-top: 20px">
+                        <!-- orders -->
+                        <div class="row">
+                            <!-- sell orders -->
+                            <div class="span4">
+                                <div class="boundary">
+                                    <div class="widget_title">Sell orders</div>
+                                    <div style="max-height: 300px; overflow: auto" id="sell_orders">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Unit price (BTC)</th>
+                                                    <th>Amount</th>
+                                                    <th>Total (BTC)</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <!-- sample row
+                                                 <tr>
+                                                    <td>...</td>
+                                                    <td>...</td>
+                                                    <td>...</td>
+                                                 </tr>
+                                                -->
+                                            </tbody>
+                                        </table>
+                                        <div style="margin: 0 20px 20px 20px" class="muted -empty">
+                                            <em>No orders yet.</em>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- buy orders -->
+                            <div class="span4">
+                                <div class="boundary">
+                                    <div class="widget_title">Buy orders</div>
+                                    <div style="max-height: 300px;overflow: auto" id="buy_orders">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Unit price (BTC)</th>
+                                                    <th>Amount</th>
+                                                    <th>Total (BTC)</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+
+                                            </tbody>
+                                        </table>
+                                        <div style="margin: 0 20px 20px 20px" class="muted -empty">
+                                            <em>No orders yet.</em>
+                                        </div>
+                                    </div>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- my orders -->
+                    <div class="span8" style="margin-top: 20px" id="my_orders">
+                        <div class="boundary">
+                            <div class="widget_title">My Orders</div>
+                            <div class="row">
+                                <div class="span8" style="max-height: 300px; overflow: auto;">
+                                    <div style="margin: 0 20px 20px 20px" class="muted hidden -logged-out">
+                                        <em>You need to login to see your orders.</em>
+                                    </div>
+                                    <div class="hidden -logged-in">
+                                        <div class="-instructions">
+                                            <p class="label label-info info_buysell">
+                                                To clear your i-th order, send <em>...****.xxxxxxxx</em> of BTC to <span style="font-weight: 600">{{ clear_order_address }}</span>, where
+                                                i = xxxxxxxx.After your command is processed, your BTC will be send back to you.
+                                            </p>
+                                        </div>
+                                        <table class="table table-striped -non-empty">
+                                            <thead>
+                                                <tr>
+                                                    <th>Time</th>
+                                                    <th>Type</th>
+                                                    <th>Unit price (BTC)</th>
+                                                    <th>Amount</th>
+                                                    <th>Total (BTC)</th>
+                                                    <th>Index</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <!-- sample code
+                                                 <tr>
+                                                     <td>Some Date Time</td>
+                                                     <td>Bid</td>
+                                                     <td>0.1234</td>
+                                                     <td>10</td>
+                                                     <td>1.234</td>
+                                                     <td>1</td>
+                                                 </tr>
+                                                 -->
+                                            </tbody>
+                                        </table>
+                                        <div style="margin: 0 20px 20px 20px" class="muted hidden -empty">
+                                            <em>Empty.</em>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- recent trades -->
+                    <div class="span8" style="margin-top: 20px; margin-bottom: 20px" id="recent_trades">
+                        <div class="boundary">
+                            <div class="widget_title">Recent Trades</div>
+                            <div class="row">
+                                <div class="span8" style="max-height: 600px; overflow: auto">
+                                    <table class="table table-striped hidden -non-empty">
+                                        <thead>
+                                            <tr>
+                                                <th>Time</th>
+                                                <th>Type</th>
+                                                <th>Unit price (BTC)</th>
+                                                <th>Amount</th>
+                                                <th>Total (BTC)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- sample code
+                                             <tr>
+                                                 <td>Some Date Time</td>
+                                                 <td>Buy</td>
+                                                 <td>0.1234</td>
+                                                 <td>10</td>
+                                                 <td>1.234</td>
+                                             </tr>
+                                             -->
+                                        </tbody>
+                                    </table>
+                                    <div style="margin: 0 20px 20px 20px" class="muted hidden -empty">
+                                        <em>No trades yet.</em>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- right panel -->
+            <div class="span4">
+                <!-- right panel -->
+                <div class="row">
+                    <div class="span4">
+                        <h3>{{ asset_name }}</h3>
+                        <pre>{% autoescape off %}{{ asset_intro }}{% endautoescape %}</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script type="text/javascript" src="/static/js/highstock.js"></script>
+<script type="text/javascript" src="/static/js/chart.js"></script>
+<script type="text/javascript">
+    var asset_name = $.trim("{{ asset_name }}");
+
+    function repopulate_table(data, e_tbody, e_empty){
+        if (data.length == 0){
+            e_empty.removeClass('hidden');
+            e_tbody.addClass('hidden');
+        }
+        else{
+            e_empty.addClass('hidden');
+            e_tbody.removeClass('hidden');
+            e_tbody.empty();
+            $.each(data, function(index,v){
+               var e = "<tr>";
+                $.each(v, function(i,dv){
+                   e = e+"<td>"+dv+"</td>";
+                });
+                e = e+"</tr>";
+                $(e).appendTo(e_tbody);
+            });
+        }
+    }
+
+    function init_recent_trades(){
+        $.getJSON("/asset/"+asset_name+'/recent-trades', function(data){
+            var e_recent_trades = $("#recent_trades");
+            var e_tbody = e_recent_trades.find(".-non-empty tbody");
+            var e_empty = e_recent_trades.find(".-empty");
+            repopulate_table(data, e_tbody, e_empty);
+        });
+    }
+
+    function limit_buy_form_on_change_handler(){
+        var e_limit_buy_amount = $("#limit_buy_amount");
+        var e_limit_buy_price = $("#limit_buy_price");
+        var limit_buy_amount = parseInt(e_limit_buy_amount.val());
+        var limit_buy_price = parseFloat(e_limit_buy_price.val());
+        var e_message = $("#limit_buy_form -message");
+        var e_message_success = e_message.find("-success");
+        var e_message_error = e_message.find("-error");
+        var error = '';
+
+        if (!(limit_buy_amount>=0 && limit_buy_amount<=9999)) {
+            e_limit_buy_amount.val(0);
+            error += 'Amount is a positive integer between 0 and 9999<br/>';
+        } else {
+            e_limit_buy_amount.val(limit_buy_amount);
+        }
+        if (!limit_buy_price>=0){
+            e_limit_buy_price.val(0);
+            error += 'unit price must be non-negative<br/>';
+        } else {
+            e_limit_buy_price.val(limit_buy_price.toFixed(4));
+            limit_buy_price = parseFloat(e_limit_buy_price.val());
+        }
+
+        if (limit_buy_amount==0 && limit_buy_price==0){
+            e_message_success.addClass('hidden');
+            e_message_error.addClass('hidden');
+        }
+        else if (error!=''){
+            e_message_success.addClass('hidden');
+            e_message_error.removeClass('hidden');
+            e_message_error.html(error);
+        }
+        else{
+            e_message_error.addClass('hidden');
+            e_message_success.removeClass('hidden');
+            e_message_success.find(".-payment").html((limit_buy_amount*limit_buy_price+limit_buy_amount*0.00000001).toFixed(8));
+            e_message_success.find(".-change").html((limit_buy_amount*0.00000001).toFixed(8));
+        }
+    }
+
+    function limit_sell_form_on_change_handler(){
+        var e_limit_sell_amount = $("#limit_sell_amount");
+        var e_limit_sell_price = $("#limit_sell_price");
+        var limit_sell_amount = parseInt(e_limit_sell_amount.val());
+        var limit_sell_price = parseFloat(e_limit_sell_price.val());
+        var e_message = $("#limit_sell_form -message");
+        var e_message_success = e_message.find("-success");
+        var e_message_error = e_message.find("-error");
+        var error = '';
+
+        if (!(limit_sell_amount>=0 && limit_sell_amount<=9999)) {
+            e_limit_sell_amount.val(0);
+            error += 'Amount is a positive integer between 0 and 9999<br/>';
+        } else {
+            e_limit_sell_amount.val(limit_sell_amount);
+        }
+        if (!limit_sell_price>=0){
+            e_limit_sell_price.val(0);
+            error += 'unit price must be non-negative<br/>';
+        } else {
+            e_limit_sell_price.val(limit_sell_price.toFixed(4));
+            limit_sell_price = parseFloat(e_limit_sell_price.val());
+        }
+
+        if (limit_sell_amount==0 && limit_sell_price==0){
+            e_message_success.addClass('hidden');
+            e_message_error.addClass('hidden');
+        }
+        else if (error!=''){
+            e_message_success.addClass('hidden');
+            e_message_error.removeClass('hidden');
+            e_message_error.html(error);
+        }
+        else{
+            e_message_error.addClass('hidden');
+            e_message_success.removeClass('hidden');
+            e_message_success.find(".-payment").html((limit_sell_amount*0.00000001).toFixed(8));
+            e_message_success.find(".-change").html((limit_sell_amount*0.00000001).toFixed(8));
+        }
+    }
+
+    function market_buy_on_change_handler(){
+        var e_market_buy_total = $("#market_buy_total");
+        var market_buy_total = parseFloat(e_market_buy_total.val());
+        var e_message = $("#market_buy_form -message");
+        var e_message_success = e_message.find("-success");
+        var e_message_error = e_message.find("-error");
+        var error = '';
+
+        if (!market_buy_total>=0) {
+            e_market_buy_total.val(0);
+            error += 'Invest must be a positive number.<br/>';
+        } else {
+            e_market_buy_total.val(market_buy_total);
+        }
+
+        if (market_buy_total==0){
+            e_message_success.addClass('hidden');
+            e_message_error.addClass('hidden');
+        }
+        else if (error!=''){
+            e_message_success.addClass('hidden');
+            e_message_error.removeClass('hidden');
+            e_message_error.html(error);
+        }
+        else{
+            e_message_error.addClass('hidden');
+            e_message_success.removeClass('hidden');
+            e_message_success.find(".-payment").html(market_buy_total.toFixed(8));
+        }
+    }
+
+    function market_sell_on_change_handler(){
+        var e_market_sell_amount = $("#market_sell_amount");
+        var market_sell_amount = parseFloat(e_market_sell_amount.val());
+        var e_message = $("#market_buy_form -message");
+        var e_message_success = e_message.find("-success");
+        var e_message_error = e_message.find("-error");
+        var error = '';
+
+        if (!market_sell_amount>=0) {
+            e_market_sell_amount.val(0);
+            error += 'Amount must be a non-negative number.<br/>';
+        } else {
+            e_market_sell_amount.val(market_sell_amount);
+        }
+
+        if (market_sell_amount==0){
+            e_message_success.addClass('hidden');
+            e_message_error.addClass('hidden');
+        }
+        else if (error!=''){
+            e_message_success.addClass('hidden');
+            e_message_error.removeClass('hidden');
+            e_message_error.html(error);
+        }
+        else{
+            e_message_error.addClass('hidden');
+            e_message_success.removeClass('hidden');
+            e_message_success.find(".-payment").html((e_market_sell_amount*0.00000001).toFixed(8));
+            e_message_success.find(".-change").html((e_market_sell_amount*0.00000001).toFixed(8));
+        }
+    }
+
+    function asset_login_callback(){
+        var user_address = $(".search-query").val();
+        $.getJSON("/asset-page-login/"+asset_name+'/'+user_address, function(data){
+            $("#balance .-logged-in").html(data.balance);
+            var e_user_orders = $("#my_orders");
+            var e_orders_tbody = e_user_orders.find("tbody");
+            var e_orders_empty = e_user_orders.find("-logged-in -empty");
+            repopulate_table(data.active_orders,e_orders_tbody, e_orders_empty);
+        });
+    }
+
+    function asset_logout_callback(){
+        //seems everything is good in our css-driven system. seems there's no need to write any code for now.
+    }
+
+    function populate_orders_callback(){
+        $.getJSON("/orderbook/"+asset_name, function(data){
+            var e_sell_orders = $("#sell_orders");
+            var e_buy_orders = $("#buy_orders");
+            var e_sell_tbody = e_sell_orders.find("tbody");
+            var e_sell_empty = e_sell_orders.find("-empty");
+            var e_buy_tbody = e_buy_orders.find("tbody");
+            var e_buy_empty = e_buy_orders.find("-empty");
+
+            repopulate_table(data.ask, e_sell_tbody, e_sell_empty);
+            repopulate_table(data.bid, e_buy_tbody, e_buy_empty);
+        });
+    }
+
+    $(document).ready(function(){
+        window.login_hooks.append(asset_login_callback);
+        window.logout_hooks.append(asset_logout_callback);
+        window.auto_exec_hooks.append(populate_orders_callback);
+
+        //bind event handlers for the 4 forms
+        $("#limit_buy_form").find("input").change(limit_buy_form_on_change_handler);
+        $("#limit_sell_form").find("input").change(limit_sell_form_on_change_handler);
+        $("#market_buy_form").find("input").change(market_buy_on_change_handler);
+        $("#market_sell_form").find("input").change(market_sell_on_change_handler);
+
+        draw_chart("asset_chart","/chart-data/"+asset_name,null,"stock-price-volume",true);
+        init_recent_trades();
+
+        auth("login");
+    })
+</script>
+{% endblock %}

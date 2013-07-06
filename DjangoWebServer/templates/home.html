@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Open Exchange
+{% endblock %}
+
+{% block menu_home %} class="active" {% endblock %}
+
+{% block page_content %}
+    <div class="jumbotron masthead" style="min-height: 450px">
+        <div class="container">
+            <div class="row">
+                <div class="span12">
+                    <h1>Open Exchange</h1>
+                    <p>A blockchain-based exchange for virtual securities</p>
+                    <p>
+                       <a href="{% url 'market' %}" class="btn btn-primary btn-large">Browse Market</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="marketing">
+            <h1>Introducing Open Exchange</h1>
+            <p class="marketing-byline">OpenExchange is a platform for issuing, trading, and managing Bitcoin-nominated
+                virtual securities. It utilizes the blockchain to achieve a higher level of security than exchanges
+                using username-password systems. It also inherits both anonymity and transparency from the blockchain.
+            </p>
+            <div class="row-fluid">
+                <div class="span4">
+                    <img src="/static/img/security-icon.jpg" />
+                    <h2>Security</h2>
+                    <p>
+                        OpenExchange uses the blockchain as its protocol. Your Bitcoin address is your account.
+                        One can never access an account until having its private key.
+                    </p>
+                </div>
+                <div class="span4">
+                    <img src="/static/img/anonymity-icon.jpg" />
+                    <h2>Anonymity</h2>
+                    <p>
+                        Even we ourselves do not know your information except the Bitcoin address. No e-mails, usernames,
+                        or passwords are stored in our database, nor they are used at all.
+                    </p>
+                </div>
+                <div class="span4">
+                    <img src="/static/img/transparency-icon.jpg" />
+                    <h2>Transparency</h2>
+                    <p>
+                        The trading are encoded in the blockchain. All trading history is accessible by anyone.
+                        No front-runs or secret trades are possible.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

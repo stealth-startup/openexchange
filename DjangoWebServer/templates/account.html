@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Operation History{% endblock %}
+
+{% block page_content %}
+    <div style="padding-top: 50px">
+        <div class="container">
+            <h2>Operation History - {{ asset_name }}</h2>
+            <ul class="nav nav-tabs" id="info_tabs">
+                <li><a href="#log_trade" data-toggle="tab">Trade</a></li>
+                <li><a href="#log_pay" data-toggle="tab">Pay</a></li>
+                {% if failures_html != "" %}
+                    <li><a href="#log_failure" data-toggle="tab">Failures</a></li>
+                {% endif %}
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane active" id="log_trade">
+                    {{ trade_html|safe }}
+                </div>
+                <div class="tab-pane active" id="log_pay">
+                    {{ pay_html|safe }}
+                </div>
+                {% if failures_html != "" %}
+                    <div class="tab-pane active" id="log_failure">
+                        {{ failure_html|safe }}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script type="text/javascript">
+    $(function(){
+        base_init();
+        auth('login');
+        $('#info_tabs a:first').tab('show');
+    });
+</script>
+{% endblock %}
