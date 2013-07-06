@@ -16,8 +16,8 @@ urlpatterns = patterns('',
        url(r'^$', home, name='home'),
        url(r'^market$', market, name='market'),
        url(r'^help$', help, name='help'),
-       url(r'^account/(?P<asset_name>[A-Z]+)/(?P<user_address>[A-Za-z0-9]+)$', account, name='account'),
-       (r'^asset/(?P<asset_name>[A-Z]+)$', asset),
+       url(r'^account/(?P<asset_name>[A-Za-z]+)/(?P<user_address>[A-Za-z0-9]+)$', account, name='account'),
+       (r'^asset/(?P<asset_name>[A-Za-z]+)$', asset),
        #############################################################   apis
        #change from_time pattern to only use digits
        (r'^chart-data/(?P<asset_name>[A-Z]+)$', chart_data),

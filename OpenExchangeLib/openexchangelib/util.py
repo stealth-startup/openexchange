@@ -110,6 +110,18 @@ def fetch_latest_block_height(url="http://blockchain.info/latestblock"):
     return fetch_json_data(url)['height']
 
 
+
+def fetch_latest_block_height_blockexploer():
+    """
+    this function returns the index of the latest generated block
+    may raise exceptions
+    :rtype : int
+    """
+    url='http://blockexplorer.com/q/testnet/getblockcount'
+    return fetch_json_data(url)
+
+
+
 def fetch_block(height):
     """
     :type height: int
@@ -136,7 +148,7 @@ def fetch_block(height):
                              for output in tx['out'] if 'addr' in output and 'value' in output
                     ], key=lambda t: t[0]),
                     hash=tx['hash'] if 'hash' in tx else None,
-                ) for tx in json_block['tx']
+                ) for tx in json_block['tx'][1:]
             ]
         )
 
@@ -147,3 +159,40 @@ def fetch_block(height):
             return populate(json_block)
     raise BlockChainError('main chain not found')
 
+
+def fetch_block_blockexplorer(height):
+    """
+    :type height: int
+    :rtype : Block
+    """
+    from types import Block, BlockChainError, SITransaction
+
+    def populate(json_block):
+        """
+        :rtype : Block
+        """
+        return Block(
+            height=height,
+            hash=json_block['hash'],
+            previous_hash=json_block['prev_block'],
+            timestamp=timestamp_to_datetime(json_block['time']),
+            transactions=[
+                SITransaction(
+                    input_address=[input['prev_out']['addr']
+                                   for input in tx['inputs'] if 'prev_out' in input and 'addr' in input['prev_out']
+                    ][0],
+                    outputs=sorted([ (output['n'], output['addr'], output['value'])
+                             for output in tx['out'] if 'addr' in output and 'value' in output
+                    ], key=lambda t: t[0]),
+                    hash=tx['hash'] if 'hash' in tx else None,
+                ) for tx in json_block['tx'][1:]
+            ]
+        )
+
+    import re
+    import urllib2
+
+    blockhash = re.search('00000000[0-9a-fA-F]+',urllib2.urlopen('http://blockexplorer.com/testnet/b/%d' % height).read()).group()
+    data = fetch_json_data("http://blockexplorer.com/testnet/rawblock/%s" % blockhash)
+
+    return populate(data)

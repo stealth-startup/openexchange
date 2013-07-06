@@ -15,6 +15,9 @@ def retrieve_latest_block_height():
     if settings.BLOCK_SOURCE == settings.BLOCKCHAIN_DOT_INFO:
         from openexchangelib.util import fetch_latest_block_height
         return fetch_latest_block_height()
+    elif settings.BLOCK_SOURCE == settings.BLOCKEXPLORER:
+        from openexchangelib.util import fetch_latest_block_height_blockexplorer
+        return fetch_latest_block_height_blockexplorer()
     else:
         raise NotImplementedError('currently, the only implemented method of retrieving the latest block height '
                                   'is through blockchain.info')
@@ -32,6 +35,9 @@ def retrieve_block(height):
     if settings.BLOCK_SOURCE == settings.BLOCKCHAIN_DOT_INFO:
         from openexchangelib.util import fetch_block
         return fetch_block(height)
+    elif settings.BLOCK_SOURCE == settings.BLOCKEXPLORER:
+        from openexchangelib.util import fetch_block_blockexplorer
+        return fetch_block_blockexplorer(height)
     else:
         raise NotImplementedError('currently, the only implemented method of retrieving blocks is through blockchain.info')
 

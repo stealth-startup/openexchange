@@ -116,6 +116,10 @@ def load_static_data():
         return util.load_obj(os.path.join(data_path, 'static_data'))
 
 
+def save_static_data(static_data):
+    util.save_obj(static_data, os.path.join(data_path, 'static_data'))
+
+
 def assets_data():
     indexes = [int(f) for f in os.listdir(ASSET_FOLDER) if os.path.isfile(os.path.join(ASSET_FOLDER, f)) and f.isdigit()]
     return {index: util.load_obj(os.path.join(ASSET_FOLDER, str(index))) for index in indexes}

@@ -397,8 +397,7 @@ class Asset(object):
     def __init__(self, total_shares,
                  limit_buy_address, limit_sell_address, market_buy_address, market_sell_address, clear_order_address,
                  transfer_address, pay_address, create_vote_address, vote_address, state_control_address,
-                 metadata_address,
-                 issuer_address, meta_data=None):
+                 issuer_address):
         """
         :param meta_data: any extra data that should bind to this Asset.
         :type meta_data: dict
@@ -416,9 +415,7 @@ class Asset(object):
         self.create_vote_address = create_vote_address
         self.vote_address = vote_address
         self.state_control_address = state_control_address
-        self.metadata_address = metadata_address
         self.issuer_address = issuer_address
-        self.meta_data = {} if meta_data is None else meta_data
 
         self.sell_order_book = []  # only store ask limit orders, market order won't stay after execution
         """:type: list of SellLimitOrder"""

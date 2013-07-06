@@ -123,4 +123,4 @@ class Command(NoArgsCommand):
 
         self.stdout.write('saving the new chained_state')
         dm.push_chained_state(chained_state)
-        self.stdout.write('complete. we advanced one block further to %d', new_block.height)
+        self.stdout.write('complete. we advanced one block further to %d' % new_block.height)
