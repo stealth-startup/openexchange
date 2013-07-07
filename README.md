@@ -7,11 +7,11 @@ Install OpenExchangeLib first by
 
     pip install folder-of-the-lib
 
-This package is the core implementation of OpenExchange protocol
+This package is the core implementation of OpenExchange protocol.
 
 2 ExchangeServer
 ------------
-This is the local server of OpenExchange. It calls OpenExchangeLib internally, and implement the payout functionality in addition.
+This is the local server of OpenExchange. It calls OpenExchangeLib internally, and implement the payout functionality additionally.
 
 3 DjangoWebServer
 ------------
