@@ -1,53 +1,12 @@
 ####################  Exceptions
+import settings
+from pybit.data import Transaction
+
+
 class OEBaseException(Exception):
     def __init__(self, *args, **kwargs):
         lkw = ["%s: %s" % (str(k), str(v)) for k, v in kwargs]
         Exception.__init__(self, *(args + tuple(lkw)))
-
-
-class BlockChainError(OEBaseException):
-    pass
-
-
-####################  Blockchain building blocks
-class SITransaction(object):
-    """
-    only record the first input of all input addresses
-    """
-
-    def __init__(self, input_address, outputs, hash):
-        """
-        :type input_address: str
-        :type outputs: list of tuple
-        :param outputs: list of (n, address, amount)
-        :type hash: str
-        """
-        self.input_address = input_address
-        self.outputs = outputs
-        self.hash = hash
-
-    def __str__(self):
-        return 'input_address: %s, outputs: %s, hash: %s' % (self.input_address, str(self.outputs), self.hash)
-
-
-class Block(object):
-    def __init__(self, height, hash, previous_hash, transactions, timestamp):
-        """
-        :type height: int
-        :type hash: str
-        :type previous_hash: str
-        :type transactions: list of SITransaction
-        :type timestamp: Datetime
-        """
-        self.height = height
-        self.hash = hash
-        self.previous_hash = previous_hash
-        self.transactions = transactions
-        self.timestamp = timestamp
-
-    def __str__(self):
-        return 'height: %d, hash: %s, previous_hash: %s, timestamp: %s, transactions: %s' % (
-            self.height, self.hash, self.previous_hash, str(self.timestamp), str(self.transactions))
 
 
 class Request(object):  # base class for all requests
@@ -60,7 +19,7 @@ class Request(object):  # base class for all requests
 
     def __init__(self, transaction, block_timestamp):
         """
-        :type transaction: SITransaction
+        :type transaction: Transaction
         :type block_timestamp: datetime
         """
         self.transaction = transaction
@@ -73,7 +32,7 @@ class Request(object):  # base class for all requests
     @classmethod
     def ignored_request(cls, transaction, block_timestamp, state):
         """
-        :type transaction: SITransaction
+        :type transaction: Transaction
         :type block_timestamp: datetime
         :type state: int
         """
@@ -82,76 +41,81 @@ class Request(object):  # base class for all requests
         return req
 
 
-class CreateAsset(Request):
+class CreateAssetRequest(Request):
     # message ids starts from 10000
     MSG_ASSET_ALREADY_REGISTERED = 10000
     MSG_INPUT_ADDRESS_NOT_LEGIT = 10001
 
     def __init__(self, transaction, block_timestamp, file_id):
         """
-        :type transaction: SITransaction
+        :type transaction: Transaction
         :type block_timestamp: datetime
         :type file_id: int
         """
-        super(CreateAsset, self).__init__(transaction, block_timestamp)
+        super(CreateAssetRequest, self).__init__(transaction, block_timestamp)
         self.file_id = file_id
 
 
-class ExchangeStateControl(Request):
-    STATE_RESUME = 1
+class ExchangeStateControlRequest(Request):
+    STATE_RESUME = 1  # request state, this will not conflict with Request.STATE_XX since they are in different use
     STATE_PAUSE = 2
 
     # message ids starts from 10000
     MSG_STATE_NOT_SUPPORTED = 10000
     MSG_INPUT_ADDRESS_NOT_LEGIT = 10001
 
-    def __init__(self, transaction, block_timestamp, state):
+    def __init__(self, transaction, block_timestamp, request_state):
         """
-        :type transaction: SITransaction
+        :type transaction: Transaction
         :type block_timestamp: datetime
-        :type state: int
+        :type request_state: int
         """
-        super(ExchangeStateControl, self).__init__(transaction, block_timestamp)
-        self.state = state
+        super(ExchangeStateControlRequest, self).__init__(transaction, block_timestamp)
+        self.request_state = request_state
 
 
 class TradeItem(object):
+    TRADE_TYPE_BUY = 1
+    TRADE_TYPE_SELL = 2
+    TRADE_TYPE_CANCELLED = 3
+
     def __init__(self, unit_price, amount, timestamp, trade_type):
         """
         :type unit_price: int
         :type amount: int
         :type timestamp: datetime
+        :type trade_type: int
         """
         self.unit_price = unit_price
         self.amount = amount
         self.timestamp = timestamp
         self.trade_type = trade_type
 
+    @classmethod
+    def trade_cancelled(cls, timestamp):
+        """
+        :type timestamp: datetime
+        """
+        return cls(None, None, timestamp, cls.TRADE_TYPE_CANCELLED)
 
-class CanceledTrade(TradeItem):  # the trade is canceled
-    def __init__(self, timestamp):
-        TradeItem.__init__(self, None, None, timestamp, None)
 
-
-class BuyLimitOrder(Request):
-
+class BuyLimitOrderRequest(Request):
     # message ids starts from 10000
     MSG_ZERO_VOLUME = 10000
     MSG_UNIT_PRICE_ILLEGIT = 10001
 
-    def __init__(self, transaction, block_timestamp, user_address, order_index, volume, unit_price):
+    def __init__(self, transaction, block_timestamp, order_index, volume, unit_price):
         """
-        :type transaction: SITransaction
+        :type transaction: Transaction
         :type block_timestamp: datetime
-        :type user_address: str
         :param order_index: every order of a user has a unique index
         :type order_index: int or None
         :type volume: int
         :type unit_price: int or None
         """
-        super(BuyLimitOrder, self).__init__(transaction, block_timestamp)
+        super(BuyLimitOrderRequest, self).__init__(transaction, block_timestamp)
 
-        self.user_address = user_address
+        self.user_address = transaction.input_addresses[0]
         self.order_index = order_index
         self.volume_requested = volume
         self.volume_unfulfilled = volume
@@ -161,27 +125,25 @@ class BuyLimitOrder(Request):
         """:type: list of TradeItem"""
 
 
-class SellLimitOrder(Request):
-
+class SellLimitOrderRequest(Request):
     # message ids starts from 10000
     MSG_ZERO_VOLUME = 10000
     MSG_UNIT_PRICE_ILLEGIT = 10001
     MSG_USER_DOES_NOT_EXISTS = 1002
     MSG_NOT_ENOUGH_ASSET = 1003
 
-    def __init__(self, transaction, block_timestamp, user_address, order_index, volume, unit_price):
+    def __init__(self, transaction, block_timestamp, order_index, volume, unit_price):
         """
-        :type transaction: SITransaction
+        :type transaction: Transaction
         :type block_timestamp: datetime
-        :type user_address: str
         :param order_index: every order of a user has a unique index
         :type order_index: int or None
         :type volume: int
         :type unit_price: int or None
         """
-        super(SellLimitOrder, self).__init__(transaction, block_timestamp)
+        super(SellLimitOrderRequest, self).__init__(transaction, block_timestamp)
 
-        self.user_address = user_address
+        self.user_address = transaction.input_addresses[0]
         self.order_index = order_index
         self.volume_requested = volume
         self.volume_unfulfilled = volume
@@ -191,23 +153,21 @@ class SellLimitOrder(Request):
         """:type: list of TradeItem"""
 
 
-class BuyMarketOrder(Request):
-
+class BuyMarketOrderRequest(Request):
     # message ids starts from 10000
     MSG_ZERO_TOTAL_PRICE = 10000
 
-    def __init__(self, transaction, block_timestamp, user_address, total_price):
+    def __init__(self, transaction, block_timestamp, total_price):
         """
-        buy market order won't have order index since it will be executed immediately, not possible to cancel
-        :type transaction: SITransaction
+        buy market order won't have order index since it will be executed immediately, it's not possible to cancel
+        :type transaction: Transaction
         :type block_timestamp: datetime
-        :type user_address: str
         :param total_price: total money for buying at market, will try to spend them all.(amount is always integer)
         :type total_price: int
         """
-        super(BuyMarketOrder, self).__init__(transaction, block_timestamp)
+        super(BuyMarketOrderRequest, self).__init__(transaction, block_timestamp)
 
-        self.user_address = user_address
+        self.user_address = transaction.input_addresses[0]
         self.total_price_requested = total_price
 
         self.total_price_unfulfilled = total_price
@@ -217,23 +177,21 @@ class BuyMarketOrder(Request):
         """:type: list of TradeItem"""
 
 
-class SellMarketOrder(Request):
-
+class SellMarketOrderRequest(Request):
     # message ids starts from 10000
     MSG_ZERO_TOTAL_VOLUME = 10000
     MSG_USER_DOES_NOT_EXISTS = 10001
     MSG_AVAILABLE_ASSET_NOT_ENOUGH = 10002
 
-    def __init__(self, transaction, block_timestamp, user_address, volume):
+    def __init__(self, transaction, block_timestamp, volume):
         """
         sell market order won't have order index since it will be executed immediately, not possible to cancel
-        :type transaction: SITransaction
+        :type transaction: Transaction
         :type block_timestamp: datetime
-        :type user_address: str
         :type volume: int
         """
-        super(SellMarketOrder, self).__init__(transaction, block_timestamp)
-        self.user_address = user_address
+        super(SellMarketOrderRequest, self).__init__(transaction, block_timestamp)
+        self.user_address = transaction.input_addresses[0]
         self.volume_requested = volume
 
         self.volume_unfulfilled = volume
@@ -243,27 +201,24 @@ class SellMarketOrder(Request):
         """:type: list of TradeItem"""
 
 
-class ClearOrder(Request):
-
+class ClearOrderRequest(Request):
     # message ids starts from 10000
     MSG_USER_DOES_NOT_EXISTS = 10000
     MSG_INDEX_IS_ZERO = 10001
     MSG_ORDER_DOES_NOT_EXIST = 10002
 
-    def __init__(self, transaction, block_timestamp, user_address, index):
+    def __init__(self, transaction, block_timestamp, index):
         """
-        :type transaction: SITransaction
+        :type transaction: Transaction
         :type block_timestamp: datetime
-        :type user_address: str
         :type index: int
         """
-        super(ClearOrder, self).__init__(transaction, block_timestamp)
-        self.user_address = user_address
+        super(ClearOrderRequest, self).__init__(transaction, block_timestamp)
+        self.user_address = transaction.input_addresses[0]
         self.index = index
 
 
-class Transfer(Request):
-
+class TransferRequest(Request):
     # message ids starts from 10000
     MSG_USER_DOES_NOT_EXISTS = 10000
     MSG_NO_VALID_TARGET = 10001
@@ -271,16 +226,17 @@ class Transfer(Request):
 
     def __init__(self, transaction, block_timestamp, transfer_targets):
         """
-        :type transaction: SITransaction
+        :type transaction: Transaction
         :type block_timestamp: datetime
         :type transfer_targets: dict from str to int
         """
-        super(Transfer, self).__init__(transaction, block_timestamp)
+        super(TransferRequest, self).__init__(transaction, block_timestamp)
+
+        self.transfer_from = transaction.input_addresses[0]
         self.transfer_targets = transfer_targets
 
 
-class CreateVote(Request):
-
+class CreateVoteRequest(Request):
     # message ids starts from 10000
     MSG_SENDER_IS_NOT_ISSUER = 10000
     MSG_LAST_ZERO_DAYS = 10001
@@ -288,22 +244,21 @@ class CreateVote(Request):
 
     def __init__(self, transaction, block_timestamp, expire_time, index):
         """
-        :type transaction: SITransaction
+        :type transaction: Transaction
         :type block_timestamp: datetime
         :type expire_time: datetime
         :type index: int
         """
-        super(CreateVote, self).__init__(transaction, block_timestamp)
+        super(CreateVoteRequest, self).__init__(transaction, block_timestamp)
 
         self.expire_time = expire_time
         self.index = index
 
 
-class VoteRequest(Request):
+class UserVoteRequest(Request):
     """
-    the name VoteRequest is to distinguish with the Vote class in Asset
+    the name UserVoteRequest is to distinguish with the Vote class in Asset
     """
-
     # message ids starts from 10000
     MSG_SENDER_IS_NOT_LEGIT = 10000
     MSG_VOTE_CLOSED = 10001
@@ -312,37 +267,38 @@ class VoteRequest(Request):
 
     def __init__(self, transaction, block_timestamp, index, option):
         """
-        :type transaction: SITransaction
+        :type transaction: Transaction
         :type block_timestamp: datetime
         :type index: int
         :type option: int
         """
-        super(VoteRequest, self).__init__(transaction, block_timestamp)
+        super(UserVoteRequest, self).__init__(transaction, block_timestamp)
 
         self.index = index
         self.option = option
 
 
-class Pay(Request):
-    def __init__(self, transaction, block_timestamp, payer, pay_amount, DPS, change):
+class PayRequest(Request):
+
+    MSG_PAYER_ILLEGIT = 10000
+
+    def __init__(self, transaction, block_timestamp, pay_amount, DPS, change):
         """
-        :type transaction: SITransaction
+        :type transaction: Transaction
         :type block_timestamp: datetime
-        :type payer: str
         :type pay_amount: int
         :type DPS: int
         :param DPS: dividend per share
         """
-        super(Pay, self).__init__(transaction, block_timestamp)
+        super(PayRequest, self).__init__(transaction, block_timestamp)
 
-        self.payer = payer
         self.pay_amount = pay_amount
         self.DPS = DPS
         self.change = change
 
 
-class AssetStateControl(Request):
-    STATE_RESUME = 1
+class AssetStateControlRequest(Request):
+    STATE_RESUME = 1  # request state, this will not conflict with Request.STATE_XX since they are in different use
     STATE_PAUSE = 2
 
     # message ids starts from 10000
@@ -350,16 +306,16 @@ class AssetStateControl(Request):
     MSG_INPUT_ADDRESS_NOT_LEGIT = 10001
     MSG_CAN_NOT_REINIT_WHEN_RUNNING = 10002
 
-    def __init__(self, transaction, block_timestamp, state):
+    def __init__(self, transaction, block_timestamp, request_state):
         """
         since the state could be changed in the later, now we only record the whole state
         detailed analysis could be extend easily by users of this library
-        :type transaction: SITransaction
+        :type transaction: Transaction
         :type block_timestamp: datetime
-        :type state: int
+        :type request_state: int
         """
-        super(AssetStateControl, self).__init__(transaction, block_timestamp)
-        self.state = state
+        super(AssetStateControlRequest, self).__init__(transaction, block_timestamp)
+        self.request_state = request_state
 
 
 class User(object):
@@ -369,9 +325,13 @@ class User(object):
     in an Asset, all users are organized by a dict from address -> User
     no history management
     """
-    def __init__(self):
-        self.available = 0
-        self.total = 0
+
+    def __init__(self, initial_asset=0):
+        """
+        :type initial_asset: int
+        """
+        self.available = initial_asset
+        self.total = initial_asset
         self.vote = {}  # vote index -> vote_value
         self.order_counter = 0
         self.active_orders = {}  # order_id -> order
@@ -399,9 +359,18 @@ class Asset(object):
                  transfer_address, pay_address, create_vote_address, vote_address, state_control_address,
                  issuer_address):
         """
-        :param meta_data: any extra data that should bind to this Asset.
-        :type meta_data: dict
-        :return:
+        :type total_shares: int
+        :type limit_buy_address: str
+        :type limit_sell_address: str
+        :type market_buy_address: str
+        :type market_sell_address: str
+        :type clear_order_address: str
+        :type transfer_address: str
+        :type pay_address: str
+        :type create_vote_address: str
+        :type vote_address: str
+        :type state_control_address: str
+        :type issuer_address: str
         """
         self.total_shares = total_shares
 
@@ -417,33 +386,47 @@ class Asset(object):
         self.state_control_address = state_control_address
         self.issuer_address = issuer_address
 
-        self.sell_order_book = []  # only store ask limit orders, market order won't stay after execution
-        """:type: list of SellLimitOrder"""
-        self.buy_order_book = []  # only store bid limit orders, market order won't stay after execution
-        """:type: list of BuyLimitOrder"""
+        self.sell_order_book = []  # only store ask limit orders, market order will be executed immediately
+        """:type: list of SellLimitOrderRequest"""
+        self.buy_order_book = []  # only store bid limit orders, market order will be executed immediately
+        """:type: list of BuyLimitOrderRequest"""
 
         self.state = self.__class__.STATE_PAUSED
 
         self.users = {}
-        """:type dict from str to User:"""
+        """:type: dict from str to User"""
         self.votes = {}  # from vote_id to Vote
-        """:type dict from int to Vote:"""
+        """:type: dict from int to Vote"""
 
 
 class Exchange(object):
     STATE_RUNNING = 0
     STATE_PAUSED = 1
 
-    def __init__(self):
-        import settings
+    def __init__(self,
+                 processed_block_height=settings.EXCHANGE_INIT_BLOCK_HEIGHT,
+                 processed_block_hash=settings.EXCHANGE_INIT_BLOCK_HASH,
+                 state_control_address=settings.EXCHANGE_STATE_CONTROL_ADDRESS,
+                 create_asset_address=settings.EXCHANGE_CREATE_ASSET_ADDRESS,
+                 open_exchange_address=settings.EXCHANGE_OPEN_EXCHANGE_ADDRESS,
+                 payment_log_address=settings.EXCHANGE_PAYMENT_LOG_ADDRESS,
+                 **kwargs):
+        """
+        :type processed_block_height: int
+        :type processed_block_hash: str
+        :type state_control_address: str
+        :type create_asset_address: str
+        :type open_exchange_address: str
+        :type payment_log_address: str
+        """
+        self.processed_block_height = processed_block_height
+        self.processed_block_hash = processed_block_hash
 
-        self.processed_block_height = settings.EXCHANGE_INIT_BLOCK_HEIGHT
-        self.processed_block_hash = settings.EXCHANGE_INIT_BLOCK_HASH
+        self.state_control_address = state_control_address
+        self.create_asset_address = create_asset_address
+        self.open_exchange_address = open_exchange_address
+        self.payment_log_address = payment_log_address
 
-        self.state_control_address = settings.EXCHANGE_STATE_CONTROL_ADDRESS
-        self.create_asset_address = settings.EXCHANGE_CREATE_ASSET_ADDRESS
-        self.open_exchange_address = settings.EXCHANGE_OPEN_EXCHANGE_ADDRESS
-        self.payment_log_address = settings.EXCHANGE_PAYMENT_LOG_ADDRESS
-
-        self.assets = {}  # dict from str to Asset
+        self.assets = kwargs.get('assets', {})
+        """:type: dict from str to Asset"""
         self.state = self.__class__.STATE_PAUSED

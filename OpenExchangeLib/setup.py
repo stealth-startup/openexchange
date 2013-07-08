@@ -5,9 +5,8 @@ from distutils.core import setup
 setup(
     name='openexchangelib',
     packages=['openexchangelib'],
-    version='0.1',
+    version='0.2',
     description='Implementation of OpenExchange Protocol',
     author='Rex',
-    author_email='whatever@nowhere.com',
-    url='http://www.openexchange.com'
+    author_email='fdrex1987@gmail.com'
 )

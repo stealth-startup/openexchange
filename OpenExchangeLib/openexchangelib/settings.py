@@ -1,10 +1,3 @@
-#some constants for settings
-BLOCKCHAIN_DOT_INFO = 'blockchain.info'
-BLOCKEXPLORER = 'blockexplorer.com'
-
-#settings
-BLOCK_SOURCE = BLOCKCHAIN_DOT_INFO  # default source which we retrieve block data from
-#BLOCK_SOURCE = BLOCKEXPLORER
 EXCHANGE_INIT_BLOCK_HEIGHT = 80805
 EXCHANGE_INIT_BLOCK_HASH = '0000000000fb536f74c4e8f0c85c8537b3ba66f1a52c1991ae4daab872df1ad6'
 EXCHANGE_STATE_CONTROL_ADDRESS = 'n4aVKpDEMUH29g997zbHhPyn6mksgqghGK'
