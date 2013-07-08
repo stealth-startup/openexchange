@@ -1,5 +1,9 @@
 OpenExchange
 ============
+0 Pybit
+------------
+make sure you have this library installed already.
+
 
 1 OpenExchangeLib
 ------------
