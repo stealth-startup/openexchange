@@ -1,27 +1,28 @@
 from openexchangelib import util
-from openexchangelib.types import OEBaseException
+import openexchangelib.settings as oel_settings
+from types import DataFileNotExistError
 import os
-from types import ExchangeServer
+from types import ExchangeServer, FileAlreadyExistError
 
 data_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data')
-ASSET_FOLDER = os.path.join(data_path, 'assets')
-BLOCK_FOLDER = os.path.join(data_path, 'block')
-BLOCK144_FOLDER = os.path.join(data_path, 'block144')
+ASSETS_FOLDER = os.path.join(data_path, 'assets')
+BLOCKS_FOLDER = os.path.join(data_path, 'blocks')
+PAYMENTS_FOLDER = os.path.join(data_path, 'payments')
+
+PAYMENTS_FILE_NAME = 'payments'
 
 
-class AssetDataFileNotExistError(OEBaseException):
-    pass
-
-
-def load_data(index, base):
-    file_name = os.path.join(base, str(index))
+def load_data(file_name, base):
+    assert isinstance(file_name, str)
+    file_name = os.path.join(base, file_name)
     if not os.path.isfile(file_name):
-        raise AssetDataFileNotExistError(index = index)
-    return util.load_obj(os.path.join(ASSET_FOLDER, str(index)))
+        raise DataFileNotExistError(file_name=file_name)
+    return util.load_obj(file_name)
 
 
-def save_data(obj, index, base):
-    file_name = os.path.join(base, str(index))
+def save_data(obj, file_name, base):
+    assert isinstance(file_name, str)
+    file_name = os.path.join(base, file_name)
     return util.save_obj(obj, file_name)
 
 
@@ -30,24 +31,16 @@ def asset_creation_data(index):
     :type index: int
     :rtype: tuple of (str, Asset)
     """
-    return load_data(index, ASSET_FOLDER)
+    return load_data(str(index), ASSETS_FOLDER)
 
 
-def asset_initialize_data(index):
+def asset_reinitialize_data(index):
     """
     different asset should use different index, so there's no need to have asset_name known
     :type index: int
     :rtype: Asset
     """
-    return load_data(index, ASSET_FOLDER)
-
-
-def block_data(index):
-    return load_data(index, BLOCK_FOLDER)
-
-
-def block144_data(index):
-    return load_data(index, BLOCK144_FOLDER)
+    return load_data(str(index), ASSETS_FOLDER)
 
 
 def _data_file_max_index(base):
@@ -58,39 +51,50 @@ def _data_file_max_index(base):
         return max(indexes)
 
 
-def load_exchange():
+def pop_exchange():
     """
     :rtype: ExchangeServer
     """
-    max_index = _data_file_max_index(BLOCK_FOLDER)
+    max_index = _data_file_max_index(BLOCKS_FOLDER)
     if max_index is None:
         return None
     else:
-        return block_data(max_index)
+        return load_data(str(max_index), BLOCKS_FOLDER)
 
 
-def save_exchange(exchange):
+def push_exchange(exchange):
     """
     :type exchange: ExchangeServer
     """
-    logger = util.get_logger('exchange_server')
-
     height = exchange.exchange.processed_block_height
-    save_data(exchange, height, BLOCK_FOLDER)
-
-    if height % 144 == 0:
-        save_data(exchange, height, BLOCK144_FOLDER)
-        util.write_log(logger, 'exchange is also saved to %s' % BLOCK144_FOLDER)
-
-    height_to_clean = height - 144  # only keep at most 144 files in block folder
-    file_to_clean = os.path.join(BLOCK_FOLDER, str(height_to_clean))
-    if os.path.isfile(file_to_clean):
-        os.remove(file_to_clean)
-        util.write_log(logger, '%d is removed' % height_to_clean)
-
-    util.write_log(logger, 'exchange saved. height: %d' % exchange.exchange.processed_block_height)
+    save_data(exchange, height, BLOCKS_FOLDER)
 
 
-def assets_data():
-    indexes = [int(f) for f in os.listdir(ASSET_FOLDER) if os.path.isfile(os.path.join(ASSET_FOLDER, f)) and f.isdigit()]
-    return {index: util.load_obj(os.path.join(ASSET_FOLDER, str(index))) for index in indexes}
+def assets_data(exchange):
+    """
+    :type exchange: ExchangeServer
+    """
+    indexes = [int(f) for f in os.listdir(ASSETS_FOLDER)
+               if os.path.isfile(os.path.join(ASSETS_FOLDER, f)) and f.isdigit()]
+    return {index: util.load_obj(os.path.join(ASSETS_FOLDER, str(index)))
+            for index in set(indexes) - exchange.used_init_data_indexes}
+
+
+def load_payments():
+    return load_data(PAYMENTS_FILE_NAME, PAYMENTS_FOLDER)
+
+
+def save_payments(payments, over_written=True):
+    if not over_written:
+        file_name = os.path.join(PAYMENTS_FOLDER, PAYMENTS_FILE_NAME)
+        if os.path.isfile(file_name):
+            raise FileAlreadyExistError(file_name=file_name)
+
+    return save_data(payments, PAYMENTS_FILE_NAME, PAYMENTS_FOLDER)
+
+
+def initialize_payments():
+    save_payments({
+        #block height -> (paid payments, unpaid payments, transactions)
+        oel_settings.EXCHANGE_INIT_BLOCK_HEIGHT: ({}, {}, []),
+    }, False)

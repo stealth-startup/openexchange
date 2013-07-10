@@ -1,10 +1,25 @@
+from openexchangelib.types import OEBaseException
+
+
+class DataFileNotExistError(OEBaseException):
+    pass
+
+
+class FileAlreadyExistError(OEBaseException):
+    pass
+
+
+class PaymentRecordNeedRebuildError(OEBaseException):
+    pass
+
+
 class ExchangeServer(object):
-    def __init__(self, exchange, payout_block_height, payout_transactions):
+    def __init__(self, exchange):
         """
         :type exchange: Exchange
-        :type: int
-        :type payout_transactions: dict from int to str
         """
         self.exchange = exchange
-        self.payout_block_height = payout_block_height
-        self.payout_transactions = payout_transactions
+
+        #used assets creation data / re-init data indexes
+        self.used_init_data_indexes = set()
+
