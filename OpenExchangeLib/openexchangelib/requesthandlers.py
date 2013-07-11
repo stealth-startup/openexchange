@@ -103,16 +103,17 @@ def _trade_general(buy_request, sell_request, buyer, seller, unit_price, volume,
 
 
 ################################### handlers
-def create_asset(transaction, block_timestamp, **kwargs):
+def create_asset(transaction, service_address, block_timestamp, **kwargs):
     """
     :type transaction: Transaction
+    :type service_address: str
     :type block_timestamp: datetime
     :rtype: Request
     """
     exchange = kwargs['exchange']
     sbtc_amount = kwargs['sbtc_amount']
     n = sbtc_amount % OneHundredMillion
-    req = CreateAssetRequest(transaction, block_timestamp, n)
+    req = CreateAssetRequest(transaction, service_address, block_timestamp, n)
 
     if exchange.open_exchange_address not in transaction.input_addresses:
         req.state = Request.STATE_FATAL
@@ -132,15 +133,16 @@ def create_asset(transaction, block_timestamp, **kwargs):
     return req
 
 
-def exchange_state_control(transaction, block_timestamp, **kwargs):
+def exchange_state_control(transaction, service_address, block_timestamp, **kwargs):
     """
     :type transaction: Transaction
+    :type service_address: str
     :type block_timestamp: datetime
     :rtype: Request
     """
     exchange = kwargs['exchange']
     request_state = kwargs['sbtc_amount'] % OneHundredMillion
-    req = ExchangeStateControlRequest(transaction, block_timestamp, request_state)
+    req = ExchangeStateControlRequest(transaction, service_address, block_timestamp, request_state)
 
     if exchange.open_exchange_address not in transaction.input_addresses:
         req.state = Request.STATE_FATAL
@@ -160,9 +162,10 @@ def exchange_state_control(transaction, block_timestamp, **kwargs):
     return req
 
 
-def limit_buy(transaction, block_timestamp, **kwargs):
+def limit_buy(transaction, service_address, block_timestamp, **kwargs):
     """
     :type transaction: Transaction
+    :type service_address: str
     :type block_timestamp: datetime
     :rtype: Request
     """
@@ -225,7 +228,7 @@ def limit_buy(transaction, block_timestamp, **kwargs):
     else:
         order_index = None
 
-    req = BuyLimitOrderRequest(transaction, block_timestamp, order_index, volume, unit_price)
+    req = BuyLimitOrderRequest(transaction, service_address, block_timestamp, order_index, volume, unit_price)
 
     if state != Request.STATE_OK:
         req.state = state
@@ -262,9 +265,10 @@ def limit_buy(transaction, block_timestamp, **kwargs):
         return req
 
 
-def limit_sell(transaction, block_timestamp, **kwargs):
+def limit_sell(transaction, service_address, block_timestamp, **kwargs):
     """
     :type transaction: Transaction
+    :type service_address: str
     :type block_timestamp: datetime
     :rtype: Request
     """
@@ -329,7 +333,7 @@ def limit_sell(transaction, block_timestamp, **kwargs):
     else:
         order_index = None
 
-    req = SellLimitOrderRequest(transaction, block_timestamp, order_index, volume, unit_price)
+    req = SellLimitOrderRequest(transaction, service_address, block_timestamp, order_index, volume, unit_price)
 
     if state != Request.STATE_OK:
         req.state = state
@@ -366,9 +370,10 @@ def limit_sell(transaction, block_timestamp, **kwargs):
         return req
 
 
-def market_buy(transaction, block_timestamp, **kwargs):
+def market_buy(transaction, service_address, block_timestamp, **kwargs):
     """
     :type transaction: Transaction
+    :type service_address: str
     :type block_timestamp: datetime
     :rtype: Request
     """
@@ -417,7 +422,7 @@ def market_buy(transaction, block_timestamp, **kwargs):
     if buyer_address not in asset.users:
         asset.users[buyer_address] = User()
 
-    req = BuyMarketOrderRequest(transaction, block_timestamp, total_price)
+    req = BuyMarketOrderRequest(transaction, service_address, block_timestamp, total_price)
 
     if state != Request.STATE_OK:
         req.state = state
@@ -450,9 +455,10 @@ def market_buy(transaction, block_timestamp, **kwargs):
         return req
 
 
-def market_sell(transaction, block_timestamp, **kwargs):
+def market_sell(transaction, service_address, block_timestamp, **kwargs):
     """
     :type transaction: Transaction
+    :type service_address: str
     :type block_timestamp: datetime
     :rtype: Request
     """
@@ -506,7 +512,7 @@ def market_sell(transaction, block_timestamp, **kwargs):
         state = Request.STATE_FATAL
         message = SellMarketOrderRequest.MSG_AVAILABLE_ASSET_NOT_ENOUGH
 
-    req = SellMarketOrderRequest(transaction, block_timestamp, volume)
+    req = SellMarketOrderRequest(transaction, service_address, block_timestamp, volume)
 
     if state != Request.STATE_OK:
         req.state = state
@@ -539,14 +545,15 @@ def market_sell(transaction, block_timestamp, **kwargs):
         return req
 
 
-def clear_order(transaction, block_timestamp, **kwargs):
+def clear_order(transaction, service_address, block_timestamp, **kwargs):
     """
     :type transaction: Transaction
+    :type service_address: str
     :type block_timestamp: datetime
     :rtype: Request
     """
     index = kwargs['sbtc_amount'] % OneHundredMillion
-    req = ClearOrderRequest(transaction, block_timestamp, index)
+    req = ClearOrderRequest(transaction, service_address, block_timestamp, index)
 
     asset = kwargs['asset']
     assert isinstance(asset, Asset)
@@ -566,9 +573,7 @@ def clear_order(transaction, block_timestamp, **kwargs):
 
         assert isinstance(user, User)
         if index not in user.active_orders:
-            req.state = Request.STATE_NOT_AS_EXPECTED
             req.message = ClearOrderRequest.MSG_ORDER_DOES_NOT_EXIST
-            return req
         else:
             order = user.active_orders[index]
             order.trade_history.add(TradeItem.trade_cancelled(block_timestamp))
@@ -582,13 +587,14 @@ def clear_order(transaction, block_timestamp, **kwargs):
                 asset.sell_order_book.remove(order)
                 user.available += order.volume_unfulfilled
 
-            req.state = Request.STATE_OK
-            return req
+        req.state = Request.STATE_OK
+        return req
 
 
-def transfer(transaction, block_timestamp, **kwargs):
+def transfer(transaction, service_address, block_timestamp, **kwargs):
     """
     :type transaction: Transaction
+    :type service_address: str
     :type block_timestamp: datetime
     :rtype: Request
     """
@@ -607,7 +613,7 @@ def transfer(transaction, block_timestamp, **kwargs):
     asset = kwargs['asset']
     assert isinstance(asset, Asset)
 
-    req = TransferRequest(transaction, block_timestamp, targets)
+    req = TransferRequest(transaction, service_address, block_timestamp, targets)
     total_transfer = sum(targets.values())
 
     if not targets:
@@ -639,9 +645,10 @@ def transfer(transaction, block_timestamp, **kwargs):
         return req
 
 
-def create_vote(transaction, block_timestamp, **kwargs):
+def create_vote(transaction, service_address, block_timestamp, **kwargs):
     """
     :type transaction: Transaction
+    :type service_address: str
     :type block_timestamp: datetime
     :rtype: Request
     """
@@ -657,7 +664,8 @@ def create_vote(transaction, block_timestamp, **kwargs):
     #this won't affect any thing in asset, so we don't care whether all these inputs are legit for now
     index = len(asset.votes) + 1
 
-    req = CreateVoteRequest(transaction, block_timestamp, block_timestamp + timedelta(days=n_days_expiration), index)
+    req = CreateVoteRequest(transaction, service_address, block_timestamp,
+                            block_timestamp + timedelta(days=n_days_expiration), index)
 
     if asset.issuer_address != user_address:
         req.state = Request.STATE_FATAL
@@ -673,9 +681,10 @@ def create_vote(transaction, block_timestamp, **kwargs):
         _add_payment(req, sbtc_amount)
 
 
-def user_vote(transaction, block_timestamp, **kwargs):
+def user_vote(transaction, service_address, block_timestamp, **kwargs):
     """
     :type transaction: Transaction
+    :type service_address: str
     :type block_timestamp: datetime
     :rtype: Request
     """
@@ -688,7 +697,7 @@ def user_vote(transaction, block_timestamp, **kwargs):
 
     user_address = transaction.input_addresses[0]
 
-    req = UserVoteRequest(transaction, block_timestamp, index, option)
+    req = UserVoteRequest(transaction, service_address, block_timestamp, index, option)
 
     if user_address not in asset.users or asset.users[user_address].total == 0:
         req.state = Request.STATE_FATAL
@@ -705,10 +714,8 @@ def user_vote(transaction, block_timestamp, **kwargs):
         _add_payment(req, {user_address: sbtc_amount})
 
         if vote.expire_time <= block_timestamp:
-            req.state = Request.STATE_NOT_AS_EXPECTED
             req.message = UserVoteRequest.MSG_VOTE_CLOSED
         elif index in asset.users[user_address].vote:
-            req.state = Request.STATE_NOT_AS_EXPECTED
             req.message = UserVoteRequest.MSG_ALREADY_VOTED
         else:
             asset.users[user_address].vote[index] = option
@@ -719,14 +726,15 @@ def user_vote(transaction, block_timestamp, **kwargs):
             else:
                 vote.vote_stat[option] = weight
 
-            req.state = Request.STATE_OK
+        req.state = Request.STATE_OK
 
         return req
 
 
-def pay(transaction, block_timestamp, **kwargs):
+def pay(transaction, service_address, block_timestamp, **kwargs):
     """
     :type transaction: Transaction
+    :type service_address: str
     :type block_timestamp: datetime
     :rtype: Request
     """
@@ -737,7 +745,7 @@ def pay(transaction, block_timestamp, **kwargs):
     DPS = pay_amount // asset.total_shares
     change = pay_amount - DPS * asset.total_shares
 
-    req = PayRequest(transaction, block_timestamp, pay_amount, DPS, change)
+    req = PayRequest(transaction, service_address, block_timestamp, pay_amount, DPS, change)
     assert asset.total_shares == sum([u.total for u in asset.users.values()])
 
     if asset.issuer_address not in transaction.input_addresses:
@@ -752,11 +760,12 @@ def pay(transaction, block_timestamp, **kwargs):
     return req
 
 
-def asset_state_control(transaction, block_timestamp, **kwargs):
+def asset_state_control(transaction, service_address, block_timestamp, **kwargs):
     """
     no need to pay back for asset state control requests
-    :type block_timestamp: datetime
     :type transaction: Transaction
+    :type service_address: str
+    :type block_timestamp: datetime
     :rtype: Request
     """
     exchange = kwargs['exchange']
@@ -765,7 +774,7 @@ def asset_state_control(transaction, block_timestamp, **kwargs):
     assert isinstance(asset, Asset)
 
     request_state = kwargs['sbtc_amount'] % OneHundredMillion
-    req = ExchangeStateControlRequest(transaction, block_timestamp, request_state)
+    req = ExchangeStateControlRequest(transaction, service_address, block_timestamp, request_state)
 
     if exchange.open_exchange_address not in transaction.input_addresses:
         req.state = Request.STATE_FATAL
@@ -782,8 +791,7 @@ def asset_state_control(transaction, block_timestamp, **kwargs):
         else:
             assert request_state % 10 == 3
             if asset.state == Asset.STATE_RUNNING:
-                #in this case, we just ignore this request, because we cannot update the asset when it's running
-                req.state = Request.STATE_NOT_AS_EXPECTED
+                req.state = Request.STATE_FATAL
                 req.message = AssetStateControlRequest.MSG_CAN_NOT_REINIT_WHEN_RUNNING
             else:
                 assert asset.state == Asset.STATE_PAUSED

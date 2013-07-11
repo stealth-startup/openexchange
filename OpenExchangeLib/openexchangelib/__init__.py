@@ -93,16 +93,18 @@ def process_block(exchange, block, asset_init_data=None):
                 if exchange.state == types.Exchange.STATE_PAUSED:
                     #in this case, only exchange state control order is accepted
                     if address == exchange.state_control_address:
-                        req = handler(tx, block.timestamp, exchange=exchange)
+                        req = handler(tx, address, block.timestamp, exchange=exchange)
                     else:
-                        req = types.Request.ignored_request(tx, block.timestamp, types.Request.STATE_IGNORED_SINCE_EXCHANGE_PAUSED)
+                        req = types.Request.ignored_request(tx, address, block.timestamp,
+                                                            types.Request.MSG_IGNORED_SINCE_EXCHANGE_PAUSED)
                 elif asset is not None and asset.state == types.Asset.STATE_PAUSED:
                     if address == asset.state_control_address:
-                        req = handler(tx, block.timestamp, asset=asset, asset_init_data=asset_init_data)
+                        req = handler(tx, address, block.timestamp, asset=asset, asset_init_data=asset_init_data)
                     else:
-                        req = types.Request.ignored_request(tx, block.timestamp, types.Request.STATE_IGNORED_SINCE_ASSET_PAUSED)
+                        req = types.Request.ignored_request(tx, address, block.timestamp,
+                                                            types.Request.MSG_IGNORED_SINCE_ASSET_PAUSED)
                 else:
-                    req = handler(tx, block.timestamp, exchange=exchange, asset_name=asset_name, asset=asset,
+                    req = handler(tx, address, block.timestamp, exchange=exchange, asset_name=asset_name, asset=asset,
                                   asset_init_data=asset_init_data, service_address=address, sbtc_amount=sbtc_amount)
 
                 requests.append(req)
