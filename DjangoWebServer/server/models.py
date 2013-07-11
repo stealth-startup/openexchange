@@ -35,6 +35,7 @@ class ChainedState(object):
         self.chart_data = kwargs.get('chart_data', {})
         """:type: dict"""
         self.used_asset_init_ids = kwargs.get('used_asset_init_ids', set())
+        """:type: set"""
 
 
     @classmethod
@@ -99,16 +100,14 @@ class StaticData(object):
 
 
 class UserPayLog(oel_types.Request):
-    def __init__(self, transaction, payer, DPS, share_N):
+    def __init__(self, transaction, DPS, share_N):
         """
         :type transaction: SITransaction
-        :type payer: str
         :type DPS: int
         :param DPS: dividend per share
         :type share_N: int
         :param share_N: the number of shares user holds at that time
         """
         super(UserPayLog, self).__init__(transaction)
-        self.payer = payer
         self.DPS = DPS
         self.share_N = share_N
