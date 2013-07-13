@@ -1,6 +1,6 @@
 ####################  Exceptions
 import settings
-from pybit.data import Transaction
+from pybit.data import Transaction, Printable
 
 
 class OEBaseException(Exception):
@@ -9,7 +9,7 @@ class OEBaseException(Exception):
         Exception.__init__(self, *(args + tuple(lkw)))
 
 
-class Request(object):  # base class for all requests
+class Request(Printable):  # base class for all requests
     STATE_NOT_PROCESSED = 0
     STATE_OK = 1
     STATE_FATAL = 2
@@ -81,7 +81,7 @@ class ExchangeStateControlRequest(Request):
         self.request_state = request_state
 
 
-class TradeItem(object):
+class TradeItem(Printable):
     TRADE_TYPE_BUY = 1
     TRADE_TYPE_SELL = 2
     TRADE_TYPE_CANCELLED = 3
@@ -335,7 +335,7 @@ class AssetStateControlRequest(Request):
         self.request_state = request_state
 
 
-class User(object):
+class User(Printable):
     """
     user of a specific asset
     in the Exchange, all assets are in a dict from AssetName -> Asset
@@ -354,7 +354,7 @@ class User(object):
         self.active_orders = {}  # order_id -> order
 
 
-class Vote(object):
+class Vote(Printable):
     def __init__(self, start_time, expire_time, vote_stat):
         """
         :type start_time: datetime
@@ -367,14 +367,14 @@ class Vote(object):
         self.vote_stat = vote_stat
 
 
-class Asset(object):
+class Asset(Printable):
     STATE_RUNNING = 1
     STATE_PAUSED = 2
 
     def __init__(self, total_shares,
                  limit_buy_address, limit_sell_address, market_buy_address, market_sell_address, clear_order_address,
                  transfer_address, pay_address, create_vote_address, vote_address, state_control_address,
-                 issuer_address):
+                 issuer_address, **kwargs):
         """
         :type total_shares: int
         :type limit_buy_address: str
@@ -403,20 +403,20 @@ class Asset(object):
         self.state_control_address = state_control_address
         self.issuer_address = issuer_address
 
-        self.sell_order_book = []  # only store ask limit orders, market order will be executed immediately
+        self.sell_order_book = kwargs.get('sell_order_book', [])  # only store ask limit orders, market order will be executed immediately
         """:type: list of SellLimitOrderRequest"""
-        self.buy_order_book = []  # only store bid limit orders, market order will be executed immediately
+        self.buy_order_book = kwargs.get('buy_order_book', [])  # only store bid limit orders, market order will be executed immediately
         """:type: list of BuyLimitOrderRequest"""
 
         self.state = self.__class__.STATE_PAUSED
 
-        self.users = {}
+        self.users = kwargs.get('users', {})
         """:type: dict from str to User"""
-        self.votes = {}  # from vote_id to Vote
+        self.votes = kwargs.get('votes', {})  # from vote_id to Vote
         """:type: dict from int to Vote"""
 
 
-class Exchange(object):
+class Exchange(Printable):
     STATE_RUNNING = 0
     STATE_PAUSED = 1
 

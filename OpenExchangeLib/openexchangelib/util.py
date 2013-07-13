@@ -31,18 +31,13 @@ def get_logger(name='OEDefault', **kwargs):
 
 def write_log(logger, *args, **kwargs):
     """
-    :param args:
-    :param kwargs: can have a level key can be specified to indicate which logger level should be used. debug is the default level
-    :return:
+    can specify log level and blank_lines in kwargs
     """
-    if 'level' in kwargs:
-        log_func = getattr(logger, kwargs['level'])
-        del kwargs['level']
-    else:
-        log_func = getattr(logger, 'debug')
+    log_func = getattr(logger, kwargs.get('level', 'debug'))
+    blank_lines = '\n' * kwargs.get('blank_lines', 0)
 
     message = ", ".join([str(arg) for arg in args] + ["%s: %s" % (str(k), str(v)) for k, v in kwargs.iteritems()])
-    log_func(message)
+    log_func(message + blank_lines)
 
 
 #####################  serialization and deserialization

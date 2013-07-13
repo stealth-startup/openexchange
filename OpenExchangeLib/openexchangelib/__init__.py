@@ -65,7 +65,7 @@ def process_block(exchange, block, asset_init_data=None):
     :type exchange: OpenExchange
     :param block:  next block
     :type block: Block
-    :type asset_init_data: dict from int to (str, Asset) or dict from int to Asset
+    :type asset_init_data: dict
     :param asset_init_data: the content depend on whether it's on asset creation or asset re-initialization
     :return: list of processed requests
     :rtype: list of Request
