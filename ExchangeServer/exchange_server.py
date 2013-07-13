@@ -45,15 +45,35 @@ def add_payment(all_payments, payments):
             all_payments[address] = amount
 
 
-def make_payments(payment_records, height):
+MAX_PAYMENT_BATCH = 50
+
+
+def make_payments(payment_records, height, log_address, from_addresses, change_address):
     """
     :type payment_records: list of tuple
     :type height: int
     """
-    #TODO
     #make payments (may be multiple times), save payment_records
-    #remember to add log_address when making payments
-    pass
+    paid, unpaid, txs = payment_records[height]
+    if not unpaid:
+        return
+
+    assert log_address not in unpaid
+    batch_n = (len(unpaid)-1) // MAX_PAYMENT_BATCH + 1
+    batches = [dict(unpaid[i*MAX_PAYMENT_BATCH: (i+1)*MAX_PAYMENT_BATCH]) for i in xrange(batch_n)]
+
+    for batch in batches:
+        batch[log_address] = height
+        tx = pybit.send_from_local(batch,from_addresses=from_addresses, change_address=change_address, fee=0)
+
+        for address, amount in batch.iteritems():
+            if address == log_address:
+                continue
+            else:
+                del unpaid[address]
+                paid[address] = paid.get(address, 0) + amount
+                txs.append(tx)
+                dm.save_payments(payment_records)
 
 
 def process_next_block():
@@ -126,7 +146,7 @@ def process_next_block():
 
     #9 make payments
     util.write_log('making payments')
-    make_payments(payment_records, new_block.height)
+    make_payments(payment_records, new_block.height, exchange.exchange.payment_log_address)
 
     util.write_log('all done')
 
