@@ -1,36 +1,31 @@
 __author__ = 'Rex'
 
 
-import pybit.settings as pybit_settings
-import pybit.data as pybit_types
-import openexchangelib.types as oel_types
-import openexchangelib.settings as oel_settings
-from openexchangelib import util
 from openexchangelib.types import OEBaseException
 import os
 
 
 ASICMINER_CREATION_FILE_ID = 1
+PROJ_DIR = os.path.abspath(os.path.dirname(__file__))
+DATA_DIR = os.path.join(PROJ_DIR, 'data')
+ASSET_DIR = os.path.join(DATA_DIR, 'assets')
 
 
 class AssetFolderNotEmptyError(OEBaseException):
     pass
 
 
-data_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data')
-ASSET_FOLDER = os.path.join(data_path, 'assets')
+class PybitSettingsError(OEBaseException):
+    pass
 
 
-def set_up_openexchangelib():
-    oel_settings.EXCHANGE_INIT_BLOCK_HEIGHT = 1
-    oel_settings.EXCHANGE_INIT_BLOCK_HASH = str(oel_settings.EXCHANGE_INIT_BLOCK_HEIGHT)
-    oel_settings.EXCHANGE_STATE_CONTROL_ADDRESS = 'xch_state_control'
-    oel_settings.EXCHANGE_CREATE_ASSET_ADDRESS = 'xch_create_asset'
-    oel_settings.EXCHANGE_OPEN_EXCHANGE_ADDRESS = 'xch_open_exchange'
-    oel_settings.EXCHANGE_PAYMENT_LOG_ADDRESS = 'xch_payment_log'
-
+class OpenExchangeLibSettingsError(OEBaseException):
+    pass
 
 def set_up_asicminer():
+    import openexchangelib.types as oel_types
+    from openexchangelib import util
+
     asic_miner = oel_types.Asset(
         total_shares=400000,
         limit_buy_address='asm_limit_buy',
@@ -49,17 +44,50 @@ def set_up_asicminer():
         'captain_miao': 400000
     }
     #make sure that asset folder is empty
-    current_ids = [int(f) for f in os.listdir(ASSET_FOLDER)
-                   if os.path.isfile(os.path.join(ASSET_FOLDER, f)) and f.isdigit()]
+    current_ids = [int(f) for f in os.listdir(ASSET_DIR)
+                   if os.path.isfile(os.path.join(ASSET_DIR, f)) and f.isdigit()]
     if current_ids:
         raise AssetFolderNotEmptyError('please back up your data before running this test')
-    full_name = os.path.join(ASSET_FOLDER, str(ASICMINER_CREATION_FILE_ID))
-    util.save_obj(['ASICMINER', asic_miner])
+    full_name = os.path.join(ASSET_DIR, str(ASICMINER_CREATION_FILE_ID))
+    util.save_obj(['ASICMINER', asic_miner], full_name)
 
     return asic_miner
 
+
 def check_pybit_settings():
+    from pybit import settings as pybit_settings
+    if not pybit_settings.USE_FAKE_DATA or not pybit_settings.IGNORE_SEND_FROM_LOCAL:
+        raise PybitSettingsError(USE_FAKE_DATA=pybit_settings.USE_FAKE_DATA,
+                                 IGNORE_SEND_FROM_LOCAL=pybit_settings.IGNORE_SEND_FROM_LOCAL)
 
 
+def check_openexchangelib_settings():
+    import openexchangelib.settings as oel_settings
+    if not oel_settings.FAKE_DATA:
+        raise OpenExchangeLibSettingsError(FAKE_DATA=oel_settings.FAKE_DATA)
+
+
+def start(n):
+    """
+    :type n: int
+    """
+    check_pybit_settings()
+    check_openexchangelib_settings()
+    set_up_asicminer()
+
+    os.chdir(PROJ_DIR)
+    os.system('python manage.py initdata')
+
+    for i in xrange(n):
+        os.system('python manage.py processblock')
+
+    os.system('python manage.py runserver')
+
+
+if __name__ == "__main__":
+    import sys
+    assert len(sys.argv)==2
+    n = int(sys.argv[1])
+    start(n)
 
 
