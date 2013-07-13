@@ -31,7 +31,7 @@ def set_up_asicminer():
         state_control_address='asm_state_control',
         issuer_address='asm_issuer',
         users={
-            'captain_miao': 400000
+            'captain_miao': types.User(initial_asset=400000)
         }
     )
 
@@ -56,7 +56,7 @@ def start():
 
     check_pybit_settings()
     check_openexchangelib_settings()
-    asset_data = {1: set_up_asicminer()}
+    asset_data = {1: ['ASICMINER', set_up_asicminer()]}
 
     logger = util.get_logger('test_use_fake_data', file_name='fake_data_test.log')
     exchange = openexchangelib.exchange0()
@@ -65,14 +65,13 @@ def start():
     block_n = pybit.get_block_count()
     util.write_log(logger, block_n=block_n, blank_lines=2)
 
-    for i in xrange(block_n):
+    for i in xrange(1, block_n+1):
         block = pybit.get_block_by_height(i)
         util.write_log(logger, i=i, block=block, blank_lines=2)
 
         requests = openexchangelib.process_block(exchange, block, asset_data)
         util.write_log(logger, requests=requests, blank_lines=2)
 
-        util.write_log(logger, address_book=openexchangelib.address_book(exchange), blank_lines=2)
         util.write_log(logger, exchange=exchange, blank_lines=2)
 
     util.write_log(logger, 'All done')

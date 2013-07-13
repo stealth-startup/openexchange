@@ -8,7 +8,7 @@ def get_logger(name='OEDefault', **kwargs):
     logger = logging.getLogger(name)
 
     if len(logger.handlers) == 0:
-        fmt = '%(asctime)s - %(filename)s:%(lineno)s - %(name)s - %(message)s'
+        fmt = '%(asctime)s - %(message)s'
         formatter = logging.Formatter(fmt)
 
         console_handler = logging.StreamHandler()
@@ -33,11 +33,21 @@ def write_log(logger, *args, **kwargs):
     """
     can specify log level and blank_lines in kwargs
     """
+    import inspect
+
+    caller_info = inspect.getframeinfo(inspect.stack()[1][0])
+    caller_file_name = caller_info.filename.split('/')[-1]
+    caller_function_name = caller_info.function
+    caller_line_no = caller_info.lineno
+
     log_func = getattr(logger, kwargs.get('level', 'debug'))
     blank_lines = '\n' * kwargs.get('blank_lines', 0)
 
+    if 'blank_lines' in kwargs:
+        del kwargs['blank_lines']
+    msg_prefix = "%s:%d - %s\n" % (caller_file_name, caller_line_no, caller_function_name)
     message = ", ".join([str(arg) for arg in args] + ["%s: %s" % (str(k), str(v)) for k, v in kwargs.iteritems()])
-    log_func(message + blank_lines)
+    log_func(msg_prefix + message + blank_lines)
 
 
 #####################  serialization and deserialization

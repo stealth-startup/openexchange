@@ -1,6 +1,6 @@
 ####################  Exceptions
 import settings
-from pybit.data import Transaction, Printable
+from pybit.types import Transaction, Printable
 
 
 class OEBaseException(Exception):
@@ -348,7 +348,7 @@ class User(Printable):
         :type initial_asset: int
         """
         self.available = initial_asset
-        self.total = initial_asset
+        self.total = initial_asset  # total - available == freeze (the once in order book)
         self.vote = {}  # vote index -> vote_value
         self.order_counter = 0
         self.active_orders = {}  # order_id -> order

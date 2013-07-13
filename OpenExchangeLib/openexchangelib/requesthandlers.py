@@ -1,5 +1,5 @@
 from types import *
-from pybit.data import Transaction
+from pybit.types import Transaction
 
 OneHundredMillion = 100000000
 
@@ -14,7 +14,7 @@ def _add_payment(request, payments):
         assert amount >= 0
         if amount == 0:
             continue
-        request.related_payments[address] = amount + request.related_payments.get(address,0)
+        request.related_payments[address] = amount + request.related_payments.get(address, 0)
 
 
 def _place_buy_limit_order(buy_order_book, buy_order):
@@ -102,6 +102,10 @@ def _trade_general(buy_request, sell_request, buyer, seller, unit_price, volume,
     seller.total -= volume
 
 
+class InitDataError(OEBaseException):
+    pass
+
+
 ################################### handlers
 def create_asset(transaction, service_address, block_timestamp, **kwargs):
     """
@@ -120,8 +124,8 @@ def create_asset(transaction, service_address, block_timestamp, **kwargs):
         req.message = CreateAssetRequest.MSG_INPUT_ADDRESS_NOT_LEGIT
     else:
         asset_name, new_asset = kwargs['asset_init_data'][n]
-        assert isinstance(asset_name, str)
-        assert isinstance(new_asset, Asset)
+        if not (isinstance(asset_name, str) and isinstance(new_asset, Asset) and new_asset.state == Asset.STATE_PAUSED):
+            raise InitDataError(asset_name=asset_name, new_asset=new_asset, new_asset_state=new_asset.state)
 
         if asset_name in exchange.assets:
             req.state = Request.STATE_FATAL
@@ -341,6 +345,7 @@ def limit_sell(transaction, service_address, block_timestamp, **kwargs):
         return req
     else:  # start processing limit sell
         seller.active_orders[order_index] = req
+        seller.available -= volume
 
         #change
         _add_payment(req, {seller_address: sbtc_amount})
@@ -430,8 +435,10 @@ def market_buy(transaction, service_address, block_timestamp, **kwargs):
         return req
     else:  # start processing limit buy
         while True:
-            if asset.sell_order_book and asset.sell_order_book[0].unit_price <= req.total_price_unfulfilled:  # can buy something
-                if asset.sell_order_book[0].volume_unfulfilled * asset.sell_order_book[0].unit_price >= req.total_price_unfulfilled:  # req is fully fulfilled
+            if asset.sell_order_book and asset.sell_order_book[
+                0].unit_price <= req.total_price_unfulfilled:  # can buy something
+                if asset.sell_order_book[0].volume_unfulfilled * asset.sell_order_book[
+                    0].unit_price >= req.total_price_unfulfilled:  # req is fully fulfilled
                     _trade(req, asset.sell_order_book[0])
 
                     if asset.sell_order_book[0].volume_unfulfilled == 0:  # two orders both fulfilled
@@ -521,6 +528,7 @@ def market_sell(transaction, service_address, block_timestamp, **kwargs):
     else:  # start processing limit sell
         #change
         _add_payment(req, {seller_address: sbtc_amount})
+        seller.available -= volume
 
         while True:
             if asset.buy_order_book:  # can sell something
@@ -780,14 +788,16 @@ def asset_state_control(transaction, service_address, block_timestamp, **kwargs)
         req.state = Request.STATE_FATAL
         req.message = AssetStateControlRequest.MSG_INPUT_ADDRESS_NOT_LEGIT
     elif request_state not in [AssetStateControlRequest.STATE_RESUME, AssetStateControlRequest.STATE_PAUSE] \
-        or request_state % 10 != 3:
+            and request_state % 10 != 3:
         req.state = Request.STATE_FATAL
         req.message = AssetStateControlRequest.MSG_STATE_NOT_SUPPORTED
     else:
         if request_state == AssetStateControlRequest.STATE_RESUME:
             asset.state = Asset.STATE_RUNNING
+            req.state = Request.STATE_OK
         elif request_state == AssetStateControlRequest.STATE_PAUSE:
             asset.state = Asset.STATE_PAUSED
+            req.state = Request.STATE_OK
         else:
             assert request_state % 10 == 3
             if asset.state == Asset.STATE_RUNNING:
@@ -795,7 +805,11 @@ def asset_state_control(transaction, service_address, block_timestamp, **kwargs)
                 req.message = AssetStateControlRequest.MSG_CAN_NOT_REINIT_WHEN_RUNNING
             else:
                 assert asset.state == Asset.STATE_PAUSED
-                exchange.assets[kwargs['asset_name']] = kwargs['asset_init_data'][request_state // 10]
+                asset = kwargs['asset_init_data'][request_state // 10]
+                if not (isinstance(asset, Asset) and asset.state == Asset.STATE_PAUSED):
+                    raise InitDataError(asset=asset, asset_state=asset.state)
+
+                exchange.assets[kwargs['asset_name']] = asset
                 req.state = Request.STATE_OK
 
     return req

@@ -71,7 +71,8 @@ def process_block(exchange, block, asset_init_data=None):
     :rtype: list of Request
     """
     from openexchangelib import types
-    from pybit.data import Block
+    from pybit.types import Block
+    from openexchangelib import requesthandlers as handlers
 
     #make some basic check
     assert exchange.processed_block_height == block.height - 1
@@ -93,21 +94,25 @@ def process_block(exchange, block, asset_init_data=None):
                 if exchange.state == types.Exchange.STATE_PAUSED:
                     #in this case, only exchange state control order is accepted
                     if address == exchange.state_control_address:
-                        req = handler(tx, address, block.timestamp, exchange=exchange)
+                        req = handler(tx, address, block.timestamp, exchange=exchange, sbtc_amount=sbtc_amount)
                     else:
                         req = types.Request.ignored_request(tx, address, block.timestamp,
                                                             types.Request.MSG_IGNORED_SINCE_EXCHANGE_PAUSED)
                 elif asset is not None and asset.state == types.Asset.STATE_PAUSED:
                     if address == asset.state_control_address:
-                        req = handler(tx, address, block.timestamp, asset=asset, asset_init_data=asset_init_data)
+                        req = handler(tx, address, block.timestamp, exchange=exchange, asset=asset,
+                                      asset_name=asset_name, sbtc_amount=sbtc_amount, asset_init_data=asset_init_data)
                     else:
                         req = types.Request.ignored_request(tx, address, block.timestamp,
                                                             types.Request.MSG_IGNORED_SINCE_ASSET_PAUSED)
                 else:
                     req = handler(tx, address, block.timestamp, exchange=exchange, asset_name=asset_name, asset=asset,
-                                  asset_init_data=asset_init_data, service_address=address, sbtc_amount=sbtc_amount)
+                                  asset_init_data=asset_init_data, sbtc_amount=sbtc_amount)
 
                 requests.append(req)
+                #rebuild service_dict when needed
+                if handler == handlers.asset_state_control or handler == handlers.create_asset:
+                    service_dict = address_book(exchange)
 
     # other updates
     exchange.processed_block_height = block.height
