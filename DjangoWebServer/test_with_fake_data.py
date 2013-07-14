@@ -22,36 +22,9 @@ class PybitSettingsError(OEBaseException):
 class OpenExchangeLibSettingsError(OEBaseException):
     pass
 
-def set_up_asicminer():
-    import openexchangelib.types as oel_types
-    from openexchangelib import util
 
-    asic_miner = oel_types.Asset(
-        total_shares=400000,
-        limit_buy_address='asm_limit_buy',
-        limit_sell_address='asm_limit_sell',
-        market_buy_address='asm_market_buy',
-        market_sell_address='asm_market_sell',
-        clear_order_address='asm_clear_order',
-        transfer_address='asm_transfer',
-        pay_address='asm_pay',
-        create_vote_address='asm_create_vote',
-        vote_address='asm_user_vote',
-        state_control_address='asm_state_control',
-        issuer_address='asm_issuer'
-    )
-    asic_miner.users = {
-        'captain_miao': 400000
-    }
-    #make sure that asset folder is empty
-    current_ids = [int(f) for f in os.listdir(ASSET_DIR)
-                   if os.path.isfile(os.path.join(ASSET_DIR, f)) and f.isdigit()]
-    if current_ids:
-        raise AssetFolderNotEmptyError('please back up your data before running this test')
-    full_name = os.path.join(ASSET_DIR, str(ASICMINER_CREATION_FILE_ID))
-    util.save_obj(['ASICMINER', asic_miner], full_name)
-
-    return asic_miner
+class StaticDataAlreadyExistsError(OEBaseException):
+    pass
 
 
 def check_pybit_settings():
@@ -67,15 +40,58 @@ def check_openexchangelib_settings():
         raise OpenExchangeLibSettingsError(FAKE_DATA=oel_settings.FAKE_DATA)
 
 
+def set_up_data_files():
+    import openexchangelib.types as oel_types
+    from openexchangelib import util
+
+    asic_miner = oel_types.Asset(
+        total_shares=400000,
+        limit_buy_address='asm_limit_buy',
+        limit_sell_address='asm_limit_sell',
+        market_buy_address='asm_market_buy',
+        market_sell_address='asm_market_sell',
+        clear_order_address='asm_clear_order',
+        transfer_address='asm_transfer',
+        pay_address='asm_pay',
+        create_vote_address='asm_create_vote',
+        vote_address='asm_user_vote',
+        state_control_address='asm_state_control',
+        issuer_address='asm_issuer',
+        users={
+            'captain_miao': oel_types.User(initial_asset=400000),
+        }
+    )
+    #make sure that asset folder is empty
+    current_ids = [int(f) for f in os.listdir(ASSET_DIR)
+                   if os.path.isfile(os.path.join(ASSET_DIR, f)) and f.isdigit()]
+    if current_ids:
+        raise AssetFolderNotEmptyError('please back up your data before running this test')
+    full_name = os.path.join(ASSET_DIR, str(ASICMINER_CREATION_FILE_ID))
+    util.save_obj(['ASICMINER', asic_miner], full_name)
+
+
+def set_up_static_data():
+    from openexchangelib import util
+    from server.models import StaticData
+    static_file_name = os.path.join(DATA_DIR, 'static_data')
+
+    if os.path.isfile(static_file_name):
+        raise StaticDataAlreadyExistsError()
+    else:
+        util.save_obj(StaticData(),static_file_name)
+
+
 def start(n):
     """
     :type n: int
     """
     check_pybit_settings()
     check_openexchangelib_settings()
-    set_up_asicminer()
+    set_up_data_files()
+    set_up_static_data()
 
     os.chdir(PROJ_DIR)
+    os.system('python manage.py syncdb')
     os.system('python manage.py initdata')
 
     for i in xrange(n):
@@ -86,7 +102,7 @@ def start(n):
 
 if __name__ == "__main__":
     import sys
-    assert len(sys.argv)==2
+    assert len(sys.argv) == 2
     n = int(sys.argv[1])
     start(n)
 

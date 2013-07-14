@@ -11,7 +11,7 @@ class Command(NoArgsCommand):
 
     def handle_noargs(self, **options):
         self.stdout.write('initializing chained state')
-        chained_state = ChainedState(openexchangelib.exchange0)
+        chained_state = ChainedState(openexchangelib.exchange0())
         ChainedState._global_instance = chained_state
 
         dm.push_chained_state(chained_state)
