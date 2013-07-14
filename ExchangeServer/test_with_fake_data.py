@@ -1,23 +1,26 @@
 __author__ = 'Rex'
 
-
-from openexchangelib import types, util, settings
+from openexchangelib.types import OEBaseException, Asset, User
+from openexchangelib import util
 import os
 
 
 PROJ_DIR = os.path.abspath(os.path.dirname(__file__))
+DATA_DIR = os.path.join(PROJ_DIR, 'data')
+ASSETS_DIR = os.path.join(DATA_DIR, 'assets')
+logger = util.get_logger('test_with_fake_data', file_name='fake_data_test.log')
 
 
-class PybitSettingsError(types.OEBaseException):
+class PybitSettingsError(OEBaseException):
     pass
 
 
-class OpenExchangeLibSettingsError(types.OEBaseException):
+class OpenExchangeLibSettingsError(OEBaseException):
     pass
 
 
-def set_up_asicminer():
-    return types.Asset(
+def set_up_data():
+    asic_miner = Asset(
         total_shares=400000,
         limit_buy_address='asm_limit_buy',
         limit_sell_address='asm_limit_sell',
@@ -31,9 +34,11 @@ def set_up_asicminer():
         state_control_address='asm_state_control',
         issuer_address='asm_issuer',
         users={
-            'captain_miao': types.User(initial_asset=400000)
+            'captain_miao': User(initial_asset=400000)
         }
     )
+    util.save_obj(['ASICMINER', asic_miner], os.path.join(ASSETS_DIR, '1'))
+    util.write_log(logger, 'ASICMINER data saved')
 
 
 def check_pybit_settings():
@@ -41,40 +46,30 @@ def check_pybit_settings():
     if not pybit_settings.USE_FAKE_DATA or not pybit_settings.IGNORE_SEND_FROM_LOCAL:
         raise PybitSettingsError(USE_FAKE_DATA=pybit_settings.USE_FAKE_DATA,
                                  IGNORE_SEND_FROM_LOCAL=pybit_settings.IGNORE_SEND_FROM_LOCAL)
+    util.write_log(logger, 'pybit OK')
 
 
 def check_openexchangelib_settings():
-    if not settings.FAKE_DATA:
-        raise OpenExchangeLibSettingsError(FAKE_DATA=settings.FAKE_DATA)
+    from openexchangelib import settings as oel_settings
+    if not oel_settings.FAKE_DATA:
+        raise OpenExchangeLibSettingsError(FAKE_DATA=oel_settings.FAKE_DATA)
+    util.write_log(logger, 'OpenExchangeLib OK')
 
 
 def start():
     """
     """
-    import openexchangelib
-    import pybit
+    import exchange_server
 
     check_pybit_settings()
     check_openexchangelib_settings()
-    asset_data = {1: ['ASICMINER', set_up_asicminer()]}
+    set_up_data()
 
-    logger = util.get_logger('test_use_fake_data', file_name='fake_data_test.log')
-    exchange = openexchangelib.exchange0()
-    util.write_log(logger, exchange0=exchange, blank_lines=2)
-
-    block_n = pybit.get_block_count()
-    util.write_log(logger, block_n=block_n, blank_lines=2)
-
-    for i in xrange(1, block_n+1):
-        block = pybit.get_block_by_height(i)
-        util.write_log(logger, i=i, block=block, blank_lines=2)
-
-        requests = openexchangelib.process_block(exchange, block, asset_data)
-        util.write_log(logger, requests=requests, blank_lines=2)
-
-        util.write_log(logger, exchange=exchange, blank_lines=2)
-
+    os.chdir(PROJ_DIR)
+    for i in xrange(10):
+        exchange_server.process_next_block(1)
     util.write_log(logger, 'All done')
+
 
 
 if __name__ == "__main__":

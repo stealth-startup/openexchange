@@ -1,15 +1,17 @@
-from openexchangelib.types import OEBaseException
+#do not use types as module name, it conflicts
+
+from openexchangelib import types as oel_types
 
 
-class DataFileNotExistError(OEBaseException):
+class DataFileDoesNotExistError(oel_types.OEBaseException):
     pass
 
 
-class FileAlreadyExistError(OEBaseException):
+class FileAlreadyExistError(oel_types.OEBaseException):
     pass
 
 
-class PaymentRecordNeedRebuildError(OEBaseException):
+class PaymentRecordNeedRebuildError(oel_types.OEBaseException):
     pass
 
 

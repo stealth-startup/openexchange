@@ -23,8 +23,13 @@
 import openexchangelib
 from openexchangelib import util, types as oel_types
 import data_management as dm
-from types import ExchangeServer, PaymentRecordNeedRebuildError
+from ext_types import ExchangeServer, PaymentRecordNeedRebuildError
 import pybit
+import os
+
+
+PROJ_DIR = os.path.abspath(os.path.dirname(__file__))
+logger = util.get_logger('exchange_server', file_name=os.path.join(PROJ_DIR, 'exchange_server.log'))
 
 
 def add_payment(all_payments, payments):
@@ -59,12 +64,16 @@ def make_payments(payment_records, height, log_address, from_addresses, change_a
         return
 
     assert log_address not in unpaid
-    batch_n = (len(unpaid)-1) // MAX_PAYMENT_BATCH + 1
-    batches = [dict(unpaid[i*MAX_PAYMENT_BATCH: (i+1)*MAX_PAYMENT_BATCH]) for i in xrange(batch_n)]
+    batch_n = (len(unpaid) - 1) // MAX_PAYMENT_BATCH + 1
+
+    addresses = unpaid.keys()
+    address_batches = [addresses[i * MAX_PAYMENT_BATCH: (i + 1) * MAX_PAYMENT_BATCH] for i in xrange(batch_n)]
+    batches = [{address: unpaid[address] for address in l} for l in address_batches ]
 
     for batch in batches:
         batch[log_address] = height
-        tx = pybit.send_from_local(batch,from_addresses=from_addresses, change_address=change_address, fee=0)
+        tx = pybit.send_from_local(batch, from_addresses=from_addresses, change_address=change_address, fee=0)
+        util.write_log(logger, batch=batch, tx=tx)
 
         for address, amount in batch.iteritems():
             if address == log_address:
@@ -76,19 +85,17 @@ def make_payments(payment_records, height, log_address, from_addresses, change_a
                 dm.save_payments(payment_records)
 
 
-def process_next_block():
-    logger = util.get_logger('exchange_server')
+def process_next_block(min_confirmations=6):
     #1 load the latest state
     exchange = dm.pop_exchange()
     if exchange is None:
         #init exchange
         util.write_log(logger, 'creating the beginning of exchange chain.')
         dm.push_exchange(ExchangeServer(openexchangelib.exchange0()))
-        util.write_log(logger, 'exchange saved. height: %d' % exchange.exchange.processed_block_height)
         #init payment records
         util.write_log(logger, 'creating the initial payment records.')
         dm.initialize_payments()
-        util.write_log(logger, 'initial payment records saved. ')
+        util.write_log(logger, 'initial data done. ')
         return
 
     #2 load the payment records
@@ -110,12 +117,12 @@ def process_next_block():
 
     #4 process the next block according to the state, get all processed requests
     latest_block_height = pybit.get_block_count()
-    if latest_block_height - exchange.exchange.processed_block_height < 6:
+    if latest_block_height - exchange.exchange.processed_block_height < min_confirmations:
         util.write_log(logger, 'no need to update')
         return
 
     util.write_log(logger, 'getting the new block')
-    new_block = pybit.get_block_by_height(exchange.exchange.processed_block_height+1)
+    new_block = pybit.get_block_by_height(exchange.exchange.processed_block_height + 1)
     assert new_block.previous_hash == exchange.exchange.processed_block_hash
     util.write_log(logger, 'processing the new block')
     requests = openexchangelib.process_block(exchange.exchange, new_block, dm.assets_data(exchange))
@@ -136,19 +143,22 @@ def process_next_block():
         add_payment(payments, req.related_payments)
 
     #7 add payment records [state.height+1] = ({}, unpaid = aggregate payments); save payment records
-    util.write_log('adding payments to payment records')
+    util.write_log(logger, 'adding payments to payment records')
     payment_records[new_block.height] = ({}, payments, [])  # paid, unpaid, txs
     dm.save_payments(payment_records)
 
     #8 update state for the new height; save state;
-    util.write_log('saving exchange')
+    util.write_log(logger, 'saving exchange')
     dm.push_exchange(exchange)
 
     #9 make payments
-    util.write_log('making payments')
-    make_payments(payment_records, new_block.height, exchange.exchange.payment_log_address)
+    util.write_log(logger, 'making payments')
+    make_payments(payment_records, new_block.height,
+                  log_address=exchange.exchange.payment_log_address,
+                  from_addresses=exchange.exchange.open_exchange_address,
+                  change_address=exchange.exchange.open_exchange_address)
 
-    util.write_log('all done')
+    util.write_log(logger, 'all done')
 
 
 if __name__ == "__main__":

@@ -1,14 +1,13 @@
 from openexchangelib import util
 import openexchangelib.settings as oel_settings
-from types import DataFileNotExistError
 import os
-from types import ExchangeServer, FileAlreadyExistError
+from ext_types import DataFileDoesNotExistError, FileAlreadyExistError
+
 
 data_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data')
 ASSETS_FOLDER = os.path.join(data_path, 'assets')
 BLOCKS_FOLDER = os.path.join(data_path, 'blocks')
 PAYMENTS_FOLDER = os.path.join(data_path, 'payments')
-
 PAYMENTS_FILE_NAME = 'payments'
 
 
@@ -16,7 +15,7 @@ def load_data(file_name, base):
     assert isinstance(file_name, str)
     file_name = os.path.join(base, file_name)
     if not os.path.isfile(file_name):
-        raise DataFileNotExistError(file_name=file_name)
+        raise DataFileDoesNotExistError(file_name=file_name)
     return util.load_obj(file_name)
 
 
@@ -67,7 +66,7 @@ def push_exchange(exchange):
     :type exchange: ExchangeServer
     """
     height = exchange.exchange.processed_block_height
-    save_data(exchange, height, BLOCKS_FOLDER)
+    save_data(exchange, str(height), BLOCKS_FOLDER)
 
 
 def assets_data(exchange):
