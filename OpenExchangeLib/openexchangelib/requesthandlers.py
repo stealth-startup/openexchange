@@ -782,7 +782,7 @@ def asset_state_control(transaction, service_address, block_timestamp, **kwargs)
     assert isinstance(asset, Asset)
 
     request_state = kwargs['sbtc_amount'] % OneHundredMillion
-    req = ExchangeStateControlRequest(transaction, service_address, block_timestamp, request_state)
+    req = AssetStateControlRequest(transaction, service_address, block_timestamp, request_state)
 
     if exchange.open_exchange_address not in transaction.input_addresses:
         req.state = Request.STATE_FATAL
