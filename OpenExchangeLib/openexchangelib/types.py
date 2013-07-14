@@ -131,6 +131,8 @@ class BuyLimitOrderRequest(Request):
 
         self.trade_history = []
         """:type: list of TradeItem"""
+        self.immediate_executed_trades = []  # this field is for recent-trades and chart-data
+        """:type: list of TradeItem"""
 
 
 class SellLimitOrderRequest(Request):
@@ -159,6 +161,8 @@ class SellLimitOrderRequest(Request):
         self.unit_price = unit_price
 
         self.trade_history = []
+        """:type: list of TradeItem"""
+        self.immediate_executed_trades = []  # this field is for recent-trades and chart-data
         """:type: list of TradeItem"""
 
 

@@ -63,9 +63,10 @@ def _place_sell_limit_order(sell_order_book, sell_order):
         sell_order_book.insert(loc, sell_order)
 
 
-def _trade_general(buy_request, sell_request, buyer, seller, unit_price, volume, timestamp):
+def _trade_general(buy_request, sell_request, buyer, seller, unit_price, volume, timestamp, initiate_action):
     """
-    manipulate asset record and trade history for users. will not touch anything with payments
+    manipulate asset record and trade history for users. will not touch anything with payments.
+    return TradeItem
     :type buy_request: BuyLimitOrderRequest or BuyMarketOrderRequest
     :type sell_request: SellLimitOrderRequest or SellMarketOrderRequest
     :type buyer: User
@@ -73,6 +74,8 @@ def _trade_general(buy_request, sell_request, buyer, seller, unit_price, volume,
     :type unit_price: int
     :type volume: int
     :type timestamp: datetime
+    :type initiate_action: int
+    :param initiate_action: TradeItem.TRADE_TYPE_BUY or TradeItem.TRADE_TYPE_SELL
     """
     assert buyer.available >= 0
     assert buyer.total >= 0
@@ -95,6 +98,11 @@ def _trade_general(buy_request, sell_request, buyer, seller, unit_price, volume,
 
     buy_request.trade_history.append(TradeItem(unit_price, volume, timestamp, TradeItem.TRADE_TYPE_BUY))
     sell_request.trade_history.append(TradeItem(unit_price, volume, timestamp, TradeItem.TRADE_TYPE_SELL))
+
+    if isinstance(buy_request, BuyLimitOrderRequest) and initiate_action == TradeItem.TRADE_TYPE_BUY:
+        buy_request.immediate_executed_trades.append(TradeItem(unit_price, volume, timestamp, TradeItem.TRADE_TYPE_BUY))
+    if isinstance(sell_request, SellLimitOrderRequest) and initiate_action == TradeItem.TRADE_TYPE_SELL:
+        sell_request.immediate_executed_trades.append(TradeItem(unit_price, volume, timestamp, TradeItem.TRADE_TYPE_SELL))
 
     buyer.available += volume
     buyer.total += volume
@@ -190,7 +198,7 @@ def limit_buy(transaction, service_address, block_timestamp, **kwargs):
         seller = asset.users.get(sell_order.user_address)
         assert isinstance(seller, User)
 
-        _trade_general(req, sell_order, buyer, seller, unit_price, volume, block_timestamp)
+        _trade_general(req, sell_order, buyer, seller, unit_price, volume, block_timestamp, TradeItem.TRADE_TYPE_BUY)
 
         #refund to buyer
         _add_payment(req, {req.user_address: (req.unit_price - unit_price) * volume})
@@ -293,7 +301,7 @@ def limit_sell(transaction, service_address, block_timestamp, **kwargs):
         buyer = asset.users.get(buy_order.user_address)
         assert isinstance(buyer, User)
 
-        _trade_general(buy_order, req, buyer, seller, unit_price, volume, block_timestamp)
+        _trade_general(buy_order, req, buyer, seller, unit_price, volume, block_timestamp, TradeItem.TRADE_TYPE_SELL)
 
         #withdraw to seller
         _add_payment(req, {req.user_address: unit_price * volume})
@@ -401,7 +409,7 @@ def market_buy(transaction, service_address, block_timestamp, **kwargs):
         volume = min(req.total_price_unfulfilled // unit_price, sell_order.volume_unfulfilled)
         assert volume > 0
 
-        _trade_general(req, sell_order, buyer, seller, unit_price, volume, block_timestamp)
+        _trade_general(req, sell_order, buyer, seller, unit_price, volume, block_timestamp, TradeItem.TRADE_TYPE_BUY)
 
         #withdraw to seller
         _add_payment(req, {sell_order.user_address: unit_price * volume})
@@ -487,7 +495,7 @@ def market_sell(transaction, service_address, block_timestamp, **kwargs):
 
         volume = min(buy_order.volume_unfulfilled, req.volume_unfulfilled)
 
-        _trade_general(buy_order, req, buyer, seller, unit_price, volume, block_timestamp)
+        _trade_general(buy_order, req, buyer, seller, unit_price, volume, block_timestamp, TradeItem.TRADE_TYPE_SELL)
 
         #withdraw to seller
         _add_payment(req, {req.user_address: unit_price * volume})

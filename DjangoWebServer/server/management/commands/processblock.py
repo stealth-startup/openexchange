@@ -93,19 +93,25 @@ class Command(NoArgsCommand):
                     chained_state.user_history[asset_name][user_address] = []
                 chained_state.user_history[asset_name][user_address].append(req)
 
-                if isinstance(req, (types.BuyLimitOrderRequest, types.SellLimitOrderRequest,
-                                    types.BuyMarketOrderRequest, types.SellMarketOrderRequest)):
-                    if asset_name not in chained_state.recent_trades:
+                if asset_name not in chained_state.recent_trades:
                         chained_state.recent_trades[asset_name] = []
-                    chained_state.recent_trades[asset_name] += \
-                        [ti for ti in req.trade_history if ti.trade_type != types.TradeItem.TRADE_TYPE_CANCELLED]
+                if asset_name not in chained_state.chart_data:
+                        chained_state.chart_data[asset_name] = []
+
+                if isinstance(req, (types.BuyLimitOrderRequest, types.SellLimitOrderRequest)):
+                    chained_state.recent_trades[asset_name] += [ti for ti in req.immediate_executed_trades]
                     chained_state.recent_trades[asset_name] = chained_state.recent_trades[asset_name][-100:]
 
-                    if asset_name not in chained_state.chart_data:
-                        chained_state.chart_data[asset_name] = []
                     chained_state.chart_data[asset_name] += \
                         [[util.datetime_to_timestamp(ti.timestamp)*1000, ti.unit_price, ti.amount]
-                            for ti in req.trade_history if ti.trade_type != types.TradeItem.TRADE_TYPE_CANCELLED]
+                            for ti in req.immediate_executed_trades]
+                elif isinstance(req, (types.BuyMarketOrderRequest, types.SellMarketOrderRequest)):
+                    chained_state.recent_trades[asset_name] += [ti for ti in req.trade_history]
+                    chained_state.recent_trades[asset_name] = chained_state.recent_trades[asset_name][-100:]
+
+                    chained_state.chart_data[asset_name] += \
+                        [[util.datetime_to_timestamp(ti.timestamp)*1000, ti.unit_price, ti.amount]
+                            for ti in req.trade_history]
 
             elif isinstance(req, (types.CreateVoteRequest, types.PayRequest, types.AssetStateControlRequest)):
                 if asset_name not in chained_state.asset_history:
