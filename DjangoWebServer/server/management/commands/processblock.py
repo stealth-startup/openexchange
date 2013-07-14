@@ -18,7 +18,7 @@ class Command(NoArgsCommand):
             :raw_order_book: list of BuyLimitOrder or SellLimitOrder
             """
             def add_item(display_book, unit_price, amount):
-                display_book.append([unit_price/100000000, amount, unit_price * amount / 100000000])
+                display_book.append([unit_price/100000000.0, amount, unit_price * amount / 100000000.0])
 
             display_book = []
             unit_price = None
@@ -28,11 +28,11 @@ class Command(NoArgsCommand):
                 if order.unit_price != unit_price:
                     if unit_price is not None:
                         add_item(display_book, unit_price, total_amount)
-                        if len(display_book) >= 50:
+                        if len(display_book) >= 100:
                             return display_book
-                        else:
-                            unit_price = order.unit_price
-                            total_amount = order.volume_unfulfilled
+                    else:
+                        unit_price = order.unit_price
+                        total_amount = order.volume_unfulfilled
                 else:
                     total_amount += order.volume_unfulfilled
 
