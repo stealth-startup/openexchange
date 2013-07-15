@@ -39,7 +39,7 @@
                     <li {% block menu_help %}{% endblock %}><a href="{% url 'help' %}">Help & Support</a></li>
                 </ul>
             </div><!--/.nav-collapse -->
-            <div id="account_menu" class="nav-collapse collapse pull-right -logged-in">
+            <div id="account_menu" class="nav-collapse collapse pull-right -logged-in hidden">
                 <ul class="nav">
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" style="padding-right: 100px">
@@ -51,7 +51,7 @@
                     </li>
                 </ul>
             </div>
-            <div class="navbar-search pull-right -logged-out">
+            <div class="navbar-search pull-right -logged-out hidden">
                 <input type="text" class="search-query" style="width: 250px" placeholder="Log in with your Bitcoin Address">
             </div>
         </div>
@@ -173,7 +173,7 @@
                 $('<li style="padding-left: 20px"><a href="/account/'+value['asset_name']+'/'+address+'">Operation History</a></li>').appendTo(e_drop_down);
                 $('<li class="divider"></li>').appendTo(e_drop_down);
             });
-            $('<li><a href="javascript:void(0)" onclick="logout()">Logout</a></li>').appendTo(e_drop_down);
+            $('<li><a href="javascript:void(0)" onclick="auth(\'logout\')">Logout</a></li>').appendTo(e_drop_down);
         }
     }
 

@@ -1,0 +1,15 @@
+[not logged in]:
+page: http://127.0.0.1:8000/asset/ASICMINER
+    description: Limit Orders and Market Orders Location & Look and Feel  (Minor)
+    description: Limit Orders and Market Orders is not working
+    description: No Recent Trades
+
+[logged in]:
+Account Area:
+    description: Transfer's balance is not right
+    description: Transfer dialog does not working
+    description: Operation history does not display
+
+page: http://127.0.0.1:8000/asset/ASICMINER
+    description: balance is not right
+    description: my orders does not display

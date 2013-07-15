@@ -518,9 +518,10 @@
     }
 
     $(document).ready(function(){
-        window.login_hooks.append(asset_login_callback);
-        window.logout_hooks.append(asset_logout_callback);
-        window.auto_exec_hooks.append(populate_orders_callback);
+        base_init();
+        window.login_hooks.push(asset_login_callback);
+        window.logout_hooks.push(asset_logout_callback);
+        window.auto_exec_hooks.push(populate_orders_callback);
 
         //bind event handlers for the 4 forms
         $("#limit_buy_form").find("input").change(limit_buy_form_on_change_handler);
