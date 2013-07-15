@@ -157,7 +157,7 @@
                                 <div class="boundary">
                                     <div class="widget_title">Sell orders</div>
                                     <div style="max-height: 300px; overflow: auto" id="sell_orders">
-                                        <table class="table table-striped">
+                                        <table class="table table-striped -non-empty">
                                             <thead>
                                                 <tr>
                                                     <th>Unit price (BTC)</th>
@@ -314,14 +314,15 @@
 <script type="text/javascript">
     var asset_name = $.trim("{{ asset_name }}");
 
-    function repopulate_table(data, e_tbody, e_empty){
+    function repopulate_table(data, e_non_empty, e_empty){
         if (data.length == 0){
             e_empty.removeClass('hidden');
-            e_tbody.addClass('hidden');
+            e_non_empty.addClass('hidden');
         }
         else{
             e_empty.addClass('hidden');
-            e_tbody.removeClass('hidden');
+            e_non_empty.removeClass('hidden');
+            var e_tbody = e_non_empty.find("tbody");
             e_tbody.empty();
             $.each(data, function(index,v){
                var e = "<tr>";
@@ -337,9 +338,9 @@
     function init_recent_trades(){
         $.getJSON("/asset/"+asset_name+'/recent-trades', function(data){
             var e_recent_trades = $("#recent_trades");
-            var e_tbody = e_recent_trades.find(".-non-empty tbody");
+            var e_non_empty = e_recent_trades.find(".-non-empty");
             var e_empty = e_recent_trades.find(".-empty");
-            repopulate_table(data, e_tbody, e_empty);
+            repopulate_table(data, e_non_empty, e_empty);
         });
     }
 
@@ -493,9 +494,7 @@
         $.getJSON("/asset-page-login/"+asset_name+'/'+user_address, function(data){
             $("#balance .-logged-in").html(data.balance);
             var e_user_orders = $("#my_orders");
-            var e_orders_tbody = e_user_orders.find("tbody");
-            var e_orders_empty = e_user_orders.find("-logged-in -empty");
-            repopulate_table(data.active_orders,e_orders_tbody, e_orders_empty);
+            repopulate_table(data.active_orders,e_user_orders.find('.-non-empty'), e_user_orders.find('.-empty'));
         });
     }
 
@@ -507,13 +506,9 @@
         $.getJSON("/orderbook/"+asset_name, function(data){
             var e_sell_orders = $("#sell_orders");
             var e_buy_orders = $("#buy_orders");
-            var e_sell_tbody = e_sell_orders.find("tbody");
-            var e_sell_empty = e_sell_orders.find("-empty");
-            var e_buy_tbody = e_buy_orders.find("tbody");
-            var e_buy_empty = e_buy_orders.find("-empty");
 
-            repopulate_table(data.ask, e_sell_tbody, e_sell_empty);
-            repopulate_table(data.bid, e_buy_tbody, e_buy_empty);
+            repopulate_table(data.ask, e_sell_orders.find('.-non-empty'), e_sell_orders.find(".-empty"));
+            repopulate_table(data.bid, e_buy_orders.find(".-non-empty"), e_buy_orders.find(".-empty"));
         });
     }
 
@@ -533,6 +528,7 @@
         init_recent_trades();
 
         auth("login");
+        populate_orders_callback();
     })
 </script>
 {% endblock %}
