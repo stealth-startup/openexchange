@@ -124,7 +124,7 @@ class Command(NoArgsCommand):
                         if ua not in chained_state.user_history[asset_name]:
                             chained_state.user_history[asset_name][ua] = []
                         chained_state.user_history[asset_name][user_address].append(
-                            UserPayLog(req.transaction, req.DPS, u.total))
+                            UserPayLog(req.transaction, req.block_timestamp, req.DPS, u.total))
 
         self.stdout.write('rebuilding order book')
         del chained_state.order_book

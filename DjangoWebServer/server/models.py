@@ -99,15 +99,17 @@ class StaticData(object):
         return cls._global_instance
 
 
-class UserPayLog(oel_types.Request):
-    def __init__(self, transaction, DPS, share_N):
+class UserPayLog(object):
+    def __init__(self, transaction, block_timestamp, DPS, share_N):
         """
-        :type transaction: SITransaction
+        :type transaction: Transaction
+        :type block_timestamp: datetime
         :type DPS: int
         :param DPS: dividend per share
         :type share_N: int
         :param share_N: the number of shares user holds at that time
         """
-        super(UserPayLog, self).__init__(transaction)
+        self.transaction = transaction
+        self.block_timestamp = block_timestamp
         self.DPS = DPS
         self.share_N = share_N

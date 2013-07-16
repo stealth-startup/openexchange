@@ -10,7 +10,7 @@ import helpers
 
 logger = util.get_logger('django_server')
 write_log = functools.partial(util.write_log, logger)
-
+OneHundredMillionF = 100000000.0
 
 ####################custmize some default pages#######
 def forbidden_403(request):
@@ -50,22 +50,21 @@ def account(request, asset_name, user_address):
         if isinstance(obj, list):
             return "<ul>" + ''.join([get_html(log) for log in obj]) + "</ul>"
         else:
-            assert isinstance(obj, types.Request)
             if isinstance(obj, types.BuyLimitOrderRequest):
-                return "<li>%s Limit Buy. Amount=%d Unit Price=%f <ul>%s</ul></li>" % \
+                return "<li>%s Limit Buy. Amount=%d Unit Price=%f BTC<ul>%s</ul></li>" % \
                        (
                            helpers.format_time(obj.block_timestamp), obj.volume_requested,
-                           obj.unit_price % 100000000,
+                           obj.unit_price / OneHundredMillionF,
                            get_html(obj.trade_history))
             elif isinstance(obj, types.SellLimitOrderRequest):
-                return "<li>%s Limit Sell. Amount=%d Unit Price=%f <ul>%s</ul></li>" % \
+                return "<li>%s Limit Sell. Amount=%d Unit Price=%f BTC<ul>%s</ul></li>" % \
                        (
                            helpers.format_time(obj.block_timestamp), obj.volume_requested,
-                           obj.unit_price % 100000000,
+                           obj.unit_price / OneHundredMillionF,
                            get_html(obj.trade_history))
             elif isinstance(obj, types.BuyMarketOrderRequest):
-                return "<li>%s Market Buy. Total Value=%f <ul>%s</ul></li>" % \
-                       (helpers.format_time(obj.block_timestamp), obj.total_price_requested % 100000000,
+                return "<li>%s Market Buy. Total Value=%f BTC<ul>%s</ul></li>" % \
+                       (helpers.format_time(obj.block_timestamp), obj.total_price_requested / OneHundredMillionF,
                         get_html(obj.trade_history))
             elif isinstance(obj, types.SellMarketOrderRequest):
                 return "<li>%s Market Sell. Amount=%f <ul>%s</ul></li>" % \
@@ -77,14 +76,14 @@ def account(request, asset_name, user_address):
                         ''.join(
                             ["<li>%s: %d</li>" % (addr, amount) for addr, amount in obj.transfer_targets.iteritems()]))
             elif isinstance(obj, UserPayLog):
-                return "<li>%s Pay from %s. DPS = %f, share number = %d, payment received = %f</li>" % \
-                       (helpers.format_time(obj.block_timestamp), obj.payer, obj.DPS, obj.share_N,
+                return "<li>%s DPS = %f BTC, share number = %d, payment received = %f BTC</li>" % \
+                       (helpers.format_time(obj.block_timestamp), obj.DPS / OneHundredMillionF, obj.share_N,
                         obj.DPS * obj.share_N)
             elif isinstance(obj, types.TradeItem) and obj.trade_type == types.TradeItem.TRADE_TYPE_CANCELLED:
                 return "<li>Canceled by user</li>"
             elif isinstance(obj, types.TradeItem) and obj.trade_type != types.TradeItem.TRADE_TYPE_CANCELLED:
-                return "<li>%s Trade Amount: %d, Unit Price: %f</li>" % \
-                       (helpers.format_time(obj.timestamp), obj.amount, obj.unit_price)
+                return "<li>%s Trade Amount: %d, Unit Price: %f BTC</li>" % \
+                       (helpers.format_time(obj.timestamp), obj.amount, obj.unit_price / OneHundredMillionF)
             else:
                 raise NotImplementedError()
 
@@ -92,9 +91,9 @@ def account(request, asset_name, user_address):
 
     try:
         tradings = [t for t in chained_state.user_history[asset_name][user_address]
-                    if isinstance(t, (
-                types.BuyLimitOrderRequest, types.SellLimitOrderRequest, types.BuyMarketOrderRequest,
-                types.SellMarketOrderRequest, types.TransferRequest))]
+                    if
+                    isinstance(t, (types.BuyLimitOrderRequest, types.SellLimitOrderRequest, types.BuyMarketOrderRequest,
+                                   types.SellMarketOrderRequest, types.TransferRequest))]
     except:
         tradings = []
     if tradings:
@@ -164,7 +163,8 @@ def chart_data(request, asset_name):
     """
     :type asset_name: str
     """
-    return HttpResponse(json.dumps(ChainedState.get_latest_state().chart_data.get(asset_name, [])), mimetype="application/json")
+    return HttpResponse(json.dumps(ChainedState.get_latest_state().chart_data.get(asset_name, [])),
+                        mimetype="application/json")
 
 
 def asset_order_book(request, asset_name):
@@ -210,15 +210,15 @@ def asset_page_login(request, asset_name, user_address):
     else:
         user = assets[asset_name].users[user_address]
         data = {
-            'balance': 'Total:%d, Available:%d, Freeze:%d' % (user.total, user.available, user.total-user.available),
+            'balance': 'Total:%d, Available:%d, Freeze:%d' % (user.total, user.available, user.total - user.available),
             'active_orders': [[
-                order.block_timestamp.strftime("%a, %d-%b-%Y %H:%M:%S GMT"),  # time
-                'Buy' if isinstance(order, types.BuyLimitOrderRequest) else 'Sell',  # type
-                order.unit_price / 100000000.0,  # unit_price
-                order.volume_unfulfilled,  # amount
-                order.volume_unfulfilled * order.unit_price /100000000.0,  # total btc
-                idx  # index
-            ] for idx, order in user.active_orders.iteritems()]
+                                  order.block_timestamp.strftime("%a, %d-%b-%Y %H:%M:%S GMT"), # time
+                                  'Buy' if isinstance(order, types.BuyLimitOrderRequest) else 'Sell', # type
+                                  order.unit_price / 100000000.0, # unit_price
+                                  order.volume_unfulfilled, # amount
+                                  order.volume_unfulfilled * order.unit_price / 100000000.0, # total btc
+                                  idx  # index
+                              ] for idx, order in user.active_orders.iteritems()]
         }
     return HttpResponse(json.dumps(data), mimetype="application/json")
 
@@ -242,7 +242,8 @@ def auth(request):
                     'asset_transfer_address': asset.transfer_address,
                     'total': asset.users[address].total,
                     'available': asset.users[address].available,
-                } for asset_name, asset in ChainedState.get_latest_state().exchange.assets.iteritems() if address in asset.users
+                } for asset_name, asset in ChainedState.get_latest_state().exchange.assets.iteritems() if
+                address in asset.users
             ]}), mimetype="application/json")
     else:
         for key in request.session.keys():
