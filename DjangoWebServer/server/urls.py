@@ -11,18 +11,19 @@ from server.views import \
 handler404 = page_not_found_404
 handler500 = server_error_500
 handler403 = forbidden_403
+# TODO user_address should be [A-Za-z0-9], however, to help our test, we use [A-Za-z0-9_]
 
 urlpatterns = patterns('',
        url(r'^$', home, name='home'),
        url(r'^market$', market, name='market'),
        url(r'^help$', help, name='help'),
-       url(r'^account/(?P<asset_name>[A-Za-z]+)/(?P<user_address>[A-Za-z0-9]+)$', account, name='account'),
+       url(r'^account/(?P<asset_name>[A-Za-z]+)/(?P<user_address>[A-Za-z0-9_]+)$', account, name='account'),
        (r'^asset/(?P<asset_name>[A-Za-z]+)$', asset),
        #############################################################   apis
        #change from_time pattern to only use digits
        (r'^chart-data/(?P<asset_name>[A-Z]+)$', chart_data),
        (r'^orderbook/(?P<asset_name>[A-Z]+)$', asset_order_book),
-       (r'^asset-page-login/(?P<asset_name>[A-Z]+)/(?P<user_address>[A-Za-z0-9]+)$', asset_page_login),
+       (r'^asset-page-login/(?P<asset_name>[A-Z]+)/(?P<user_address>[A-Za-z0-9_]+)$', asset_page_login),
        (r'^user/auth$', auth),
        (r'^asset/(?P<asset_name>[A-Z]+)/recent-trades$', recent_trades),
        ##################### for local testing, delete or comment out these handlers in production
