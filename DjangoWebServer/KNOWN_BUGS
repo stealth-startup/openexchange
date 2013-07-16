@@ -1,7 +1,3 @@
-[not logged in]:
-page: http://127.0.0.1:8000/asset/ASICMINER
-    description: Limit Orders and Market Orders Location & Look and Feel  (Minor)
-
 [logged in]:
 Account Area:
     description: Transfer's balance is not right
