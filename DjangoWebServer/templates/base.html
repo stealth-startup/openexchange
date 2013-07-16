@@ -90,6 +90,7 @@
       </p>
   </div>
   <div class="modal-footer">
+    <button class="btn -calculate">Calculate</button>
     <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Close</button>
   </div>
 </div>
@@ -132,21 +133,22 @@
         else{
             e_msg.addClass('hidden');
         }
-
-        if (e_modal.hasClass("in")){ // the modal is shown
-            setTimeout(function(){check_transfer_dialog(max_transfer);}, 300);
-        }
     }
 
-    function transfer_dialog(max_transfer, asset_name, transfer_address){
+    function transfer_dialog(asset_name, total, available, transfer_address){
         var e_transfer_modal = $("#transfer_modal");
         e_transfer_modal.find(".modal-header h3 span").html(asset_name);
-        e_transfer_modal.find(".modal-body .balance").html(String(max_transfer));
-        e_transfer_modal.find(".modal-body transfer-address").html(transfer_address);
+        e_transfer_modal.find(".modal-body .balance").html(available + ' / ' + total);
+        e_transfer_modal.find(".modal-body .transfer-address").html(transfer_address);
 
-        e_transfer_modal.on('show', function(){
-            check_transfer_dialog(max_transfer);
+        e_transfer_modal.find('.modal-footer .-calculate').unbind('click').bind('click', function(){
+            check_transfer_dialog(Math.min(available, 99999999));
         });
+
+        $("#transfer_to").val('');
+        $("#transfer_amount").val('');
+        e_transfer_modal.find(".modal-body .message").addClass('hidden');
+
         e_transfer_modal.modal('show');
     }
 
@@ -165,7 +167,7 @@
                 if (value['available']>0){
                     var e = $('<li style="padding-left: 20px"><a href="javascript:void(0)">Transfer</a></li>').appendTo(e_drop_down);
                     e.click(function(){
-                        transfer_dialog(Math.max(value['available'],99999999), value['asset_name'],value['asset_transfer_address']);
+                        transfer_dialog(value['asset_name'], value['total'], value['available'], value['asset_transfer_address']);
                     });
                 }
                 else
