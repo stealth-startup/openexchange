@@ -48,6 +48,11 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        <div class="control-group">
+                                            <div class="controls">
+                                                <div class="btn pull-right -calculate" style="margin-right: 63px">Calculate</div>
+                                            </div>
+                                        </div>
                                         <div class="-message">
                                             <p class="label label-info info_buysell hidden -success">
                                                 Send <span class="-payment" style="font-weight: 600"></span> BTC to
@@ -81,6 +86,11 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        <div class="control-group">
+                                            <div class="controls">
+                                                <div class="btn pull-right -calculate" style="margin-right: 63px">Calculate</div>
+                                            </div>
+                                        </div>
                                         <div class="-message">
                                             <p class="label label-info info_buysell hidden -success">
                                                 Send <span class="-payment" style="font-weight: 600"></span> BTC to
@@ -110,12 +120,17 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        <div class="control-group">
+                                            <div class="controls">
+                                                <div class="btn pull-right -calculate" style="margin-right: 63px">Calculate</div>
+                                            </div>
+                                        </div>
                                         <div class="-message">
                                             <p class="label label-info info_buysell hidden -success">
                                                 Send <span class="-payment" style="font-weight: 600"></span> BTC to
                                                 <span style="font-weight: 600">{{ market_buy_address }}</span> for buying at the market price.
                                                 After your order is confirmed, it will be executed immediately,
-                                                and the change will be sent back to you.
+                                                and the change, if there's any, will be sent back to you.
                                             </p>
                                             <p class="badge badge-warning info_buysell hidden -error"></p>
                                         </div>
@@ -130,7 +145,12 @@
                                         <div class="control-group">
                                             <label class="control-label" for="market_sell_amount" style="width: 80px">Amount</label>
                                             <div class="controls" style="margin-left: 100px">
-                                                <input type="text" id="market_sell_amount" placeholder="0" value="0" style="width: 150px">
+                                                <input type="text" id="market_sell_amount" placeholder="0" value="0" style="width: 190px">
+                                            </div>
+                                        </div>
+                                        <div class="control-group">
+                                            <div class="controls">
+                                                <div class="btn pull-right -calculate" style="margin-right: 63px">Calculate</div>
                                             </div>
                                         </div>
                                         <div class="-message">
@@ -349,9 +369,9 @@
         var e_limit_buy_price = $("#limit_buy_price");
         var limit_buy_amount = parseInt(e_limit_buy_amount.val());
         var limit_buy_price = parseFloat(e_limit_buy_price.val());
-        var e_message = $("#limit_buy_form -message");
-        var e_message_success = e_message.find("-success");
-        var e_message_error = e_message.find("-error");
+        var e_message = $("#limit_buy_form .-message");
+        var e_message_success = e_message.find(".-success");
+        var e_message_error = e_message.find(".-error");
         var error = '';
 
         if (!(limit_buy_amount>=0 && limit_buy_amount<=9999)) {
@@ -360,7 +380,7 @@
         } else {
             e_limit_buy_amount.val(limit_buy_amount);
         }
-        if (!limit_buy_price>=0){
+        if (!(limit_buy_price>=0)){
             e_limit_buy_price.val(0);
             error += 'unit price must be non-negative<br/>';
         } else {
@@ -368,7 +388,7 @@
             limit_buy_price = parseFloat(e_limit_buy_price.val());
         }
 
-        if (limit_buy_amount==0 && limit_buy_price==0){
+        if (limit_buy_amount==0 || limit_buy_price==0){
             e_message_success.addClass('hidden');
             e_message_error.addClass('hidden');
         }
@@ -390,9 +410,9 @@
         var e_limit_sell_price = $("#limit_sell_price");
         var limit_sell_amount = parseInt(e_limit_sell_amount.val());
         var limit_sell_price = parseFloat(e_limit_sell_price.val());
-        var e_message = $("#limit_sell_form -message");
-        var e_message_success = e_message.find("-success");
-        var e_message_error = e_message.find("-error");
+        var e_message = $("#limit_sell_form .-message");
+        var e_message_success = e_message.find(".-success");
+        var e_message_error = e_message.find(".-error");
         var error = '';
 
         if (!(limit_sell_amount>=0 && limit_sell_amount<=9999)) {
@@ -401,7 +421,7 @@
         } else {
             e_limit_sell_amount.val(limit_sell_amount);
         }
-        if (!limit_sell_price>=0){
+        if (!(limit_sell_price>=0)){
             e_limit_sell_price.val(0);
             error += 'unit price must be non-negative<br/>';
         } else {
@@ -409,7 +429,7 @@
             limit_sell_price = parseFloat(e_limit_sell_price.val());
         }
 
-        if (limit_sell_amount==0 && limit_sell_price==0){
+        if (limit_sell_amount==0 || limit_sell_price==0){
             e_message_success.addClass('hidden');
             e_message_error.addClass('hidden');
         }
@@ -421,20 +441,20 @@
         else{
             e_message_error.addClass('hidden');
             e_message_success.removeClass('hidden');
-            e_message_success.find(".-payment").html((limit_sell_amount*0.00000001).toFixed(8));
-            e_message_success.find(".-change").html((limit_sell_amount*0.00000001).toFixed(8));
+            e_message_success.find(".-payment").html((limit_sell_amount*0.00000001+limit_sell_price).toFixed(8));
+            e_message_success.find(".-change").html((limit_sell_amount*0.00000001+limit_sell_price).toFixed(8));
         }
     }
 
     function market_buy_on_change_handler(){
         var e_market_buy_total = $("#market_buy_total");
         var market_buy_total = parseFloat(e_market_buy_total.val());
-        var e_message = $("#market_buy_form -message");
-        var e_message_success = e_message.find("-success");
-        var e_message_error = e_message.find("-error");
+        var e_message = $("#market_buy_form .-message");
+        var e_message_success = e_message.find(".-success");
+        var e_message_error = e_message.find(".-error");
         var error = '';
 
-        if (!market_buy_total>=0) {
+        if (!(market_buy_total>=0)) {
             e_market_buy_total.val(0);
             error += 'Invest must be a positive number.<br/>';
         } else {
@@ -460,12 +480,12 @@
     function market_sell_on_change_handler(){
         var e_market_sell_amount = $("#market_sell_amount");
         var market_sell_amount = parseFloat(e_market_sell_amount.val());
-        var e_message = $("#market_buy_form -message");
-        var e_message_success = e_message.find("-success");
-        var e_message_error = e_message.find("-error");
+        var e_message = $("#market_sell_form .-message");
+        var e_message_success = e_message.find(".-success");
+        var e_message_error = e_message.find(".-error");
         var error = '';
 
-        if (!market_sell_amount>=0) {
+        if (!(market_sell_amount>=0)) {
             e_market_sell_amount.val(0);
             error += 'Amount must be a non-negative number.<br/>';
         } else {
@@ -484,8 +504,8 @@
         else{
             e_message_error.addClass('hidden');
             e_message_success.removeClass('hidden');
-            e_message_success.find(".-payment").html((e_market_sell_amount*0.00000001).toFixed(8));
-            e_message_success.find(".-change").html((e_market_sell_amount*0.00000001).toFixed(8));
+            e_message_success.find(".-payment").html((market_sell_amount*0.00000001).toFixed(8));
+            e_message_success.find(".-change").html((market_sell_amount*0.00000001).toFixed(8));
         }
     }
 
@@ -519,10 +539,21 @@
         window.auto_exec_hooks.push(populate_orders_callback);
 
         //bind event handlers for the 4 forms
-        $("#limit_buy_form").find("input").change(limit_buy_form_on_change_handler);
-        $("#limit_sell_form").find("input").change(limit_sell_form_on_change_handler);
-        $("#market_buy_form").find("input").change(market_buy_on_change_handler);
-        $("#market_sell_form").find("input").change(market_sell_on_change_handler);
+        var limit_buy_form = $("#limit_buy_form");
+        var limit_sell_form = $("#limit_sell_form");
+        var market_buy_form = $("#market_buy_form");
+        var market_sell_form = $("#market_sell_form");
+
+        limit_buy_form.find("input").change(limit_buy_form_on_change_handler);
+        limit_sell_form.find("input").change(limit_sell_form_on_change_handler);
+        market_buy_form.find("input").change(market_buy_on_change_handler);
+        market_sell_form.find("input").change(market_sell_on_change_handler);
+
+        limit_buy_form.find(".-calculate").click(limit_buy_form_on_change_handler);
+        limit_sell_form.find(".-calculate").click(limit_buy_form_on_change_handler);
+        market_buy_form.find(".-calculate").click(limit_buy_form_on_change_handler);
+        market_sell_form.find(".-calculate").click(limit_buy_form_on_change_handler);
+
 
         draw_chart("asset_chart","/chart-data/"+asset_name,null,"stock-price-volume",true);
         init_recent_trades();
