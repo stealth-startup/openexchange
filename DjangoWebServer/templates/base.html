@@ -192,6 +192,7 @@
             if (data != null){// login successfully
                 $(".-logged-in").removeClass("hidden");
                 $(".-logged-out").addClass("hidden");
+                window.user = data['address'];
                 $(window.login_hooks).each(function(i,f){f();});
             }
             else{//logged out or not logged in
@@ -219,7 +220,7 @@
 
         setInterval(function(){
             $(window.auto_exec_hooks).each(function(idx, f){f();});
-        }, 20000);
+        }, 60000);
     }
 </script>
 

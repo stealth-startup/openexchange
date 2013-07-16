@@ -210,7 +210,7 @@ def asset_page_login(request, asset_name, user_address):
     else:
         user = assets[asset_name].users[user_address]
         data = {
-            'balance': 'Total:%d, Available:%d, Freeze:%d' % (user.total, user.available, user.total - user.available),
+            'balance': 'Total:%d Available:%d In Order Book:%d' % (user.total, user.available, user.total - user.available),
             'active_orders': [[
                                   order.block_timestamp.strftime("%a, %d-%b-%Y %H:%M:%S GMT"), # time
                                   'Buy' if isinstance(order, types.BuyLimitOrderRequest) else 'Sell', # type

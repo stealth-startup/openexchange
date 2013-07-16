@@ -510,7 +510,8 @@
     }
 
     function asset_login_callback(){
-        var user_address = $(".search-query").val();
+        var user_address = window.user;
+        var asset_name = "{{ asset_name }}";
         $.getJSON("/asset-page-login/"+asset_name+'/'+user_address, function(data){
             $("#balance .-logged-in").html(data.balance);
             var e_user_orders = $("#my_orders");
