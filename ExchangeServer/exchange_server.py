@@ -1,3 +1,6 @@
+__author__ = "Rex"
+
+
 #  main logic:
 #
 #  1 load the latest state.
@@ -26,6 +29,7 @@ import data_management as dm
 from ext_types import ExchangeServer, PaymentRecordNeedRebuildError
 import pybit
 import os
+from decimal import Decimal
 
 
 PROJ_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -67,20 +71,21 @@ def make_payments(payment_records, height, log_address, from_addresses, change_a
     batch_n = (len(unpaid) - 1) // MAX_PAYMENT_BATCH + 1
 
     addresses = unpaid.keys()
-    address_batches = [addresses[i * MAX_PAYMENT_BATCH: (i + 1) * MAX_PAYMENT_BATCH] for i in xrange(batch_n)]
-    batches = [{address: unpaid[address] for address in l} for l in address_batches ]
+    batch_addresses = [addresses[i * MAX_PAYMENT_BATCH: (i + 1) * MAX_PAYMENT_BATCH] for i in xrange(batch_n)]
+    batches = [{address: unpaid[address]/Decimal('100000000') for address in l} for l in batch_addresses ]
 
     for batch in batches:
-        batch[log_address] = height
-        tx = pybit.send_from_local(batch, from_addresses=from_addresses, change_address=change_address, fee=0)
-        util.write_log(logger, batch=batch, tx=tx)
+        batch[log_address] = height / Decimal('100000000')
+        tx, signed_tx = pybit.send_from_local(batch, from_addresses=from_addresses, change_address=change_address,
+                                              fee=0, return_signed_transaction=True)
+        util.write_log(logger, batch=batch, tx=tx, signed_tx=signed_tx)
 
         for address, amount in batch.iteritems():
             if address == log_address:
                 continue
             else:
                 del unpaid[address]
-                paid[address] = paid.get(address, 0) + amount
+                paid[address] = paid.get(address, 0) + int(amount * Decimal('100000000'))
                 txs.append(tx)
                 dm.save_payments(payment_records)
 
