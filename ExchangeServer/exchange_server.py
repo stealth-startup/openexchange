@@ -72,7 +72,7 @@ def make_payments(payment_records, height, log_address, from_addresses, change_a
 
     addresses = unpaid.keys()
     batch_addresses = [addresses[i * MAX_PAYMENT_BATCH: (i + 1) * MAX_PAYMENT_BATCH] for i in xrange(batch_n)]
-    batches = [{address: unpaid[address]/Decimal('100000000') for address in l} for l in batch_addresses ]
+    batches = [{address: unpaid[address] / Decimal('100000000') for address in l} for l in batch_addresses]
 
     for batch in batches:
         batch[log_address] = height / Decimal('100000000')
@@ -117,7 +117,10 @@ def process_next_block(min_confirmations=6):
     c_paid, c_unpaid, c_txs = payment_records[exchange.exchange.processed_block_height]
     if c_unpaid != {}:
         util.write_log(logger, 'unpaid payments are non-empty, is there anything go wrong last time?', unpaid=c_unpaid)
-        make_payments(payment_records, exchange.exchange.processed_block_height)
+        make_payments(payment_records, exchange.exchange.processed_block_height,
+                      log_address=exchange.exchange.payment_log_address,
+                      from_addresses=exchange.exchange.open_exchange_address,
+                      change_address=exchange.exchange.open_exchange_address)
         return
 
     #4 process the next block according to the state, get all processed requests
