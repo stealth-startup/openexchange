@@ -1,0 +1,20 @@
+[Deploy]
+change data directory
+
+
+[Main Page]
+login text
+delete "Browse Market"
+make page compact
+make new image
+
+[Market Page]
+redesign
+
+[Asset Page]
+select Limit Orders tab by default
+add delete button
+adjust chart data's unit from 10^-8 BTC to BTC
+
+[Log Page]
+Style it
