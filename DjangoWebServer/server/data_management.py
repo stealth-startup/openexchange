@@ -2,9 +2,22 @@ from openexchangelib import util
 from openexchangelib.types import OEBaseException
 import os
 
-data_path = os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(__file__))), 'data')
+
+def ensure_dir(dir_path):
+    """
+    :type dir_path: str
+    """
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
+
+
+#data_path = os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(__file__))), 'data')
+data_path = '/mnt/open-exchange/data'
 ASSET_FOLDER = os.path.join(data_path, 'assets')
 BLOCK_FOLDER = os.path.join(data_path, 'block')
+
+ensure_dir(ASSET_FOLDER)
+ensure_dir(BLOCK_FOLDER)
 
 
 class FileNotExistError(OEBaseException):
