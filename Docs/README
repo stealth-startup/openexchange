@@ -1,0 +1,7 @@
+start bitcoind using
+bitcoind -conf='/mnt/dir/to/bitcoin.conf' -datadir='/mnt/dir/to/datadir'
+
+make sure that datadir specified is already exists. all paths are absolute path
+
+Then we can call bitcoind by 
+bitcoind -conf='/mnt/dir/to/bitcoin.conf' <command> <parameters>
