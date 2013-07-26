@@ -11,8 +11,7 @@ def ensure_dir(dir_path):
         os.makedirs(dir_path)
 
 
-#data_path = os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(__file__))), 'data')
-data_path = '/mnt/open-exchange/data'
+data_path = os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(__file__))), 'data')
 ASSET_FOLDER = os.path.join(data_path, 'assets')
 BLOCK_FOLDER = os.path.join(data_path, 'block')
 
