@@ -28,12 +28,14 @@ from openexchangelib import util, types as oel_types
 import data_management as dm
 from ext_types import ExchangeServer, PaymentRecordNeedRebuildError
 import pybit
+import pybit.settings as pybit_settings
 import os
 from decimal import Decimal
 
 
 PROJ_DIR = os.path.abspath(os.path.dirname(__file__))
 logger = util.get_logger('exchange_server', file_name=os.path.join(PROJ_DIR, 'exchange_server.log'))
+bitcoin_config_file = None
 
 
 def add_payment(all_payments, payments):
@@ -77,7 +79,8 @@ def make_payments(payment_records, height, log_address, from_addresses, change_a
     for batch in batches:
         batch[log_address] = height / Decimal('100000000')
         tx, signed_tx = pybit.send_from_local(batch, from_addresses=from_addresses, change_address=change_address,
-                                              fee=0, return_signed_transaction=True)
+                                              fee=0, return_signed_transaction=True,
+                                              config_file_name=bitcoin_config_file)
         util.write_log(logger, batch=batch, tx=tx, signed_tx=signed_tx)
 
         for address, amount in batch.iteritems():
@@ -124,13 +127,16 @@ def process_next_block(min_confirmations=6):
         return
 
     #4 process the next block according to the state, get all processed requests
-    latest_block_height = pybit.get_block_count()
+    latest_block_height = pybit.get_block_count(source=pybit_settings.SOURCE_LOCAL,
+                                                config_file_name=bitcoin_config_file)
     if latest_block_height - exchange.exchange.processed_block_height < min_confirmations:
         util.write_log(logger, 'no need to update')
         return
 
     util.write_log(logger, 'getting the new block')
-    new_block = pybit.get_block_by_height(exchange.exchange.processed_block_height + 1)
+    new_block = pybit.get_block_by_height(exchange.exchange.processed_block_height + 1,
+                                          source=pybit_settings.SOURCE_LOCAL,
+                                          config_file_name=bitcoin_config_file)
     assert new_block.previous_hash == exchange.exchange.processed_block_hash
     util.write_log(logger, 'processing the new block')
     requests = openexchangelib.process_block(exchange.exchange, new_block, dm.assets_data(exchange))

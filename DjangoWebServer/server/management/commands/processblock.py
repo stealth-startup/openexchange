@@ -8,6 +8,7 @@ from server.models import UserPayLog
 import pybit
 import pybit.settings as pybit_settings
 
+bitcoin_config_file = None
 
 class Command(NoArgsCommand):
     help = 'process one more block (if possible)'
@@ -44,7 +45,8 @@ class Command(NoArgsCommand):
         if chained_state is None:
             raise CommandError('ChainedState is not initialized yet')
 
-        latest_block_height = pybit.get_block_count(source=pybit_settings.SOURCE_BLOCKCHAIN_INFO)
+        latest_block_height = pybit.get_block_count(source=pybit_settings.SOURCE_LOCAL,
+                                                    config_file_name=bitcoin_config_file)
         assert latest_block_height >= chained_state.exchange.processed_block_height
 
         if latest_block_height == chained_state.exchange.processed_block_height:
@@ -53,7 +55,9 @@ class Command(NoArgsCommand):
 
         retrieve_height = chained_state.exchange.processed_block_height + 1
         self.stdout.write('retrieving a new block')
-        new_block = pybit.get_block_by_height(retrieve_height,source=pybit_settings.SOURCE_BLOCKCHAIN_INFO)
+        new_block = pybit.get_block_by_height(retrieve_height,
+                                              source=pybit_settings.SOURCE_LOCAL,
+                                              config_file_name=bitcoin_config_file)
 
         if new_block.previous_hash != chained_state.exchange.processed_block_hash:
             self.stdout.write('blockchain is changed, we fall back one block')
