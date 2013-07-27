@@ -1,10 +1,7 @@
 #https://docs.djangoproject.com/en/dev/howto/custom-management-commands/#howto-custom-management-commands
 from django.core.management.base import NoArgsCommand
-import os
 from server.models import StaticData
-import server.data_management as dm
 import openexchangelib.types as oel_types
-from openexchangelib import util
 from server import data_management as dm
 
 
