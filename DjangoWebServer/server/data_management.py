@@ -83,7 +83,6 @@ def pop_chained_state(remove=False):
         return data
 
 
-
 def push_chained_state(chained_state):
     """
     :type chained_state: ChainedState
@@ -104,3 +103,7 @@ def assets_data(chained_state):
     indexes = [int(f) for f in os.listdir(ASSET_FOLDER)
                if os.path.isfile(os.path.join(ASSET_FOLDER, f)) and f.isdigit()]
     return {i: util.load_obj(os.path.join(ASSET_FOLDER, str(i))) for i in set(indexes)-chained_state.used_asset_init_ids}
+
+
+def save_asset_data(obj, index):
+    return save_data(obj, str(index), ASSET_FOLDER)

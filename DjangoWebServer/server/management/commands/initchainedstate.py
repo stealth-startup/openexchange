@@ -1,12 +1,12 @@
 #https://docs.djangoproject.com/en/dev/howto/custom-management-commands/#howto-custom-management-commands
 from django.core.management.base import NoArgsCommand
 import openexchangelib
-from server.models import ChainedState, StaticData
+from server.models import ChainedState
 import server.data_management as dm
 
 
 class Command(NoArgsCommand):
-    help = 'Initialize ChainedState and StaticData. Run this command before start the web server.'
+    help = 'Initialize ChainedState. Run this command before start the web server.'
 
     def handle_noargs(self, **options):
         self.stdout.write('initializing chained state')
@@ -15,10 +15,6 @@ class Command(NoArgsCommand):
 
         dm.push_chained_state(chained_state)
         self.stdout.write('chained_state saved')
-
-        self.stdout.write('initializing static data')
-        dm.save_static_data(StaticData())  # update this when static data are changed
-        self.stdout.write('static data saved')
 
         self.stdout.write('done')
 

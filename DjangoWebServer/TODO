@@ -1,3 +1,7 @@
+[Publish]
+send orders using bitcoin (TESTNET)
+
+
 [Main Page]
 login text
 delete "Browse Market"
@@ -14,3 +18,6 @@ adjust chart data's unit from 10^-8 BTC to BTC
 
 [Log Page]
 Style it
+
+[protocol]
+add new function in asset state control to allow partial-non-stop changing
