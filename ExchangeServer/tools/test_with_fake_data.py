@@ -5,9 +5,9 @@ from openexchangelib import util
 import os
 
 
-PROJ_DIR = os.path.abspath(os.path.dirname(__file__))
-DATA_DIR = os.path.join(PROJ_DIR, 'data')
-ASSETS_DIR = os.path.join(DATA_DIR, 'assets')
+PROJ_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+DATA_DIR = os.path.join(PROJ_DIR, '../data')
+ASSETS_DIR = os.path.join(DATA_DIR, '../data/assets')
 logger = util.get_logger('test_with_fake_data', file_name='fake_data_test.log')
 
 
@@ -37,7 +37,7 @@ def set_up_data():
             'captain_miao': User(initial_asset=400000)
         }
     )
-    util.save_obj(['ASICMINER', asic_miner], os.path.join(ASSETS_DIR, '1'))
+    util.save_obj(['ASICMINER', asic_miner], os.path.join(ASSETS_DIR, '../data/assets/1'))
     util.write_log(logger, 'ASICMINER data saved')
 
 
@@ -69,7 +69,6 @@ def start():
     for i in xrange(10):
         exchange_server.process_next_block(1)
     util.write_log(logger, 'All done')
-
 
 
 if __name__ == "__main__":

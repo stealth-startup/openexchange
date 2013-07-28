@@ -37,7 +37,6 @@ class ChainedState(object):
         self.used_asset_init_ids = kwargs.get('used_asset_init_ids', set())
         """:type: set"""
 
-
     @classmethod
     def acquire_lock(cls):
         cls._lock.acquire()
@@ -61,6 +60,19 @@ class ChainedState(object):
             cls._global_instance = latest_cs
             cls.release_lock()
         return cls._global_instance
+
+    def __str__(self):
+        return "Exchange: %s\nUser history: %s\nAsset history: %s\nExchange history: %s\nFailed requests: %s\n" \
+               "Recent trades:%s\nOrder book: %s\nChart data: %s\nUsed asset init IDs: %s\n" % \
+               (str(self.exchange), str(self.user_history), str(self.asset_history), str(self.exchange_history),
+               str(self.failed_requests), str(self.recent_trades), str(self.order_book), str(self.chart_data),
+               str(self.used_asset_init_ids))
+
+    def __unicode__(self):
+        return unicode(str(self))
+
+    def __repr__(self):
+        return str(self)
 
 
 class StaticData(object):
@@ -113,3 +125,13 @@ class UserPayLog(object):
         self.block_timestamp = block_timestamp
         self.DPS = DPS
         self.share_N = share_N
+
+    def __str__(self):
+        return "transaction: %s\nblock_timestamp: %s\nDPS: %s\nshare_N: %s\n" % \
+               (str(self.transaction), str(self.block_timestamp), str(self.DPS), str(self.share_N))
+
+    def __unicode__(self):
+        return unicode(str(self))
+
+    def __repr__(self):
+        return str(self)

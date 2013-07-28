@@ -56,5 +56,16 @@ TEST_LimitBuy = 'mptmhH4UzgS3cJ35qmjqNaGWa15UPoE3fy'
 #     fee=Decimal('0.01'),  # this is high enough in testnet
 #     return_signed_transaction=False
 # )
+#
+# print pybit.send_from_local(
+#     payments={
+#         #sell 1000 at 0.009 BTC
+#         TEST_LimitSell: Decimal('0.00901')
+#     },
+#     from_addresses=[TEST_MainHolder],
+#     change_address=TEST_MainHolder,
+#     fee=Decimal('0.01'),  # this is high enough in testnet
+#     return_signed_transaction=False
+# )
 
 
