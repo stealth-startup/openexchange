@@ -31,9 +31,8 @@ class Command(NoArgsCommand):
                         add_item(display_book, unit_price, total_amount)
                         if len(display_book) >= 100:
                             return display_book
-                    else:
-                        unit_price = order.unit_price
-                        total_amount = order.volume_unfulfilled
+                    unit_price = order.unit_price
+                    total_amount = order.volume_unfulfilled
                 else:
                     total_amount += order.volume_unfulfilled
 
