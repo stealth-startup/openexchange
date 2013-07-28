@@ -93,7 +93,9 @@ def save_payments(payments, over_written=True):
 
 
 def initialize_payments():
+    from ext_types import PaymentRecord
+
     save_payments({
-        #block height -> (paid payments, unpaid payments, transactions)
-        oel_settings.EXCHANGE_INIT_BLOCK_HEIGHT: ({}, {}, []),
+        #block height -> PaymentRecord
+        oel_settings.EXCHANGE_INIT_BLOCK_HEIGHT: PaymentRecord(),
     }, False)
