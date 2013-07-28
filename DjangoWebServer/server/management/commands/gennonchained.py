@@ -35,7 +35,7 @@ class Command(NoArgsCommand):
             }
         )
 
-        dm.save_asset_data(ASSET_TEST, 1)
+        dm.save_asset_data(['TEST', ASSET_TEST], 1)
         self.stdout.write('TEST asset saved')
 
         self.stdout.write('all done')
