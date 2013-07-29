@@ -7,7 +7,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <title>{% block title %}{% endblock %}</title>
-    <meta name="description" content="Open Exchange">
+    <meta name="description" content="Open Security Exchange">
     <meta name="viewport" content="width=device-width">
 
     <link rel="stylesheet" href="/static/css/bootstrap.min.css">
@@ -31,7 +31,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </a>
-            <a class="ibrand" href="{% url 'home' %}">Open Exchange</a>
+            <a class="ibrand" href="{% url 'home' %}">Open Security Exchange</a>
             <div class="nav-collapse collapse">
                 <ul class="nav">
                     <li {% block menu_home %}{% endblock %}><a href="{% url 'home' %}">Home</a></li>
@@ -52,7 +52,7 @@
                 </ul>
             </div>
             <div class="navbar-search pull-right -logged-out hidden">
-                <input type="text" class="search-query" style="width: 250px" placeholder="Log in with your Bitcoin Address">
+                <input type="text" class="search-query" style="width: 250px" placeholder="Input Bitcoin address to search">
             </div>
         </div>
     </div>
@@ -98,10 +98,10 @@
 {% block page_content %}{% endblock %}
 
 <footer class="footer" style="text-align: center; padding-top: 50px; margin-top: 0">
-    <p>&copy; Open Exchange 2012</p>
-    <p>Both OpenExchange(Server) and OpenExchange(Website) are developed
-       and maintained by OpenExchange(Corporate Body). Please check the
-       definitions and statements on the OpenExchange(Website) page to
+    <p>&copy; Open Security Exchange 2012</p>
+    <p>Both OpenSecurityExchange(Server) and OpenSecurityExchange(Website) are developed
+       and maintained by OpenSecurityExchange(Corporate Body). Please check the
+       definitions and statements on the OpenSecurityExchange(Website) page to
        get the detailed information about our term of service and responsibility claims.</p>
 </footer>
 

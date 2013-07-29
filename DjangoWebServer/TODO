@@ -1,18 +1,14 @@
 [Main Page]
-login text (*)
-delete "Browse Market" (*)
-make page compact (*)
 make new image
 
 [Market Page]
 redesign
 
 [Asset Page]
-select Limit Orders tab by default (**)
 add delete button (*)
 
 [Log Page]
 Style it (*)
 
-[protocol]
-add new function in asset state control to allow partial-non-stop changing (***)
+[Optimization]
+css, js compress
