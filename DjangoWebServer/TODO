@@ -1,22 +1,18 @@
-[order book]
-data not correct
-
 [Main Page]
-login text
-delete "Browse Market"
-make page compact
+login text (*)
+delete "Browse Market" (*)
+make page compact (*)
 make new image
 
 [Market Page]
 redesign
 
 [Asset Page]
-select Limit Orders tab by default
-add delete button
-adjust chart data's unit from 10^-8 BTC to BTC
+select Limit Orders tab by default (**)
+add delete button (*)
 
 [Log Page]
-Style it
+Style it (*)
 
 [protocol]
-add new function in asset state control to allow partial-non-stop changing
+add new function in asset state control to allow partial-non-stop changing (***)

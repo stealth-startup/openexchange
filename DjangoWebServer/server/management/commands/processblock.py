@@ -8,7 +8,9 @@ from server.models import UserPayLog
 import pybit
 import pybit.settings as pybit_settings
 
+
 bitcoin_config_file = None
+
 
 class Command(NoArgsCommand):
     help = 'process one more block (if possible)'
@@ -67,9 +69,11 @@ class Command(NoArgsCommand):
         requests = openexchangelib.process_block(chained_state.exchange, new_block, dm.assets_data(chained_state))
         address_book = openexchangelib.address_book(chained_state.exchange)
 
-        self.stdout.write('updating history and used file ids...')
+        self.stdout.write('updating all history and used file ids...')
         for req in requests:
             assert req.state != types.Request.STATE_NOT_PROCESSED
+
+            #failed requests history
             if req.state == types.Request.STATE_FATAL:
                 chained_state.failed_requests.append(req)
                 continue
@@ -77,19 +81,21 @@ class Command(NoArgsCommand):
             #used file ids
             if isinstance(req, types.CreateAssetRequest):
                 chained_state.used_asset_init_ids.add(req.file_id)
-            if isinstance(req, types.AssetStateControlRequest) and req.request_state%10 == 3:
+            if isinstance(req, types.AssetStateControlRequest) and req.request_state%10 == 3:  # TODO upgrade protocol
                 chained_state.used_asset_init_ids.add(req.request_state // 10)
 
             assert isinstance(req.transaction, types.Transaction)
             user_address = req.transaction.input_addresses[0]
             asset_name = address_book[req.service_address][0]
 
+            #exchange history
             if isinstance(req, (types.CreateAssetRequest, types.ExchangeStateControlRequest)):
                 chained_state.exchange_history.append(req)
             elif isinstance(req,
                             (types.BuyLimitOrderRequest, types.SellLimitOrderRequest, types.BuyMarketOrderRequest,
                              types.SellMarketOrderRequest, types.ClearOrderRequest, types.TransferRequest,
                              types.UserVoteRequest)):
+                #user history
                 if asset_name not in chained_state.user_history:
                     chained_state.user_history[asset_name] = {}
                 if user_address not in chained_state.user_history[asset_name]:
@@ -102,24 +108,31 @@ class Command(NoArgsCommand):
                         chained_state.chart_data[asset_name] = []
 
                 if isinstance(req, (types.BuyLimitOrderRequest, types.SellLimitOrderRequest)):
+                    #recent trades
                     chained_state.recent_trades[asset_name] += [ti for ti in req.immediate_executed_trades]
                     chained_state.recent_trades[asset_name] = chained_state.recent_trades[asset_name][-100:]
 
+                    #chart data
                     chained_state.chart_data[asset_name] += \
-                        [[util.datetime_to_timestamp(ti.timestamp)*1000, ti.unit_price, ti.amount]
+                        [[util.datetime_to_timestamp(ti.timestamp)*1000, ti.unit_price/100000000.0, ti.amount]
                             for ti in req.immediate_executed_trades]
                 elif isinstance(req, (types.BuyMarketOrderRequest, types.SellMarketOrderRequest)):
+                    #recent trades
                     chained_state.recent_trades[asset_name] += [ti for ti in req.trade_history]
                     chained_state.recent_trades[asset_name] = chained_state.recent_trades[asset_name][-100:]
 
+                    #chart data
                     chained_state.chart_data[asset_name] += \
-                        [[util.datetime_to_timestamp(ti.timestamp)*1000, ti.unit_price, ti.amount]
+                        [[util.datetime_to_timestamp(ti.timestamp)*1000, ti.unit_price/100000000.0, ti.amount]
                             for ti in req.trade_history]
 
             elif isinstance(req, (types.CreateVoteRequest, types.PayRequest, types.AssetStateControlRequest)):
+                #asset history
                 if asset_name not in chained_state.asset_history:
                     chained_state.asset_history[asset_name] = []
                 chained_state.asset_history[asset_name].append(req)
+
+                #dividend-related
                 if isinstance(req, types.PayRequest):
                     for ua, u in chained_state.exchange.assets[asset_name].users.iteritems():
                         if asset_name not in chained_state.user_history:
