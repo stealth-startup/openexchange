@@ -237,12 +237,6 @@
                                         <em>You need to login to see your orders.</em>
                                     </div>
                                     <div class="hidden -logged-in">
-                                        <div class="-instructions">
-                                            <p class="label label-info info_buysell">
-                                                To clear your i-th order, send <em>...****.xxxxxxxx</em> of BTC to <span style="font-weight: 600">{{ clear_order_address }}</span>, where
-                                                i = xxxxxxxx.After your command is processed, your BTC will be send back to you.
-                                            </p>
-                                        </div>
                                         <table class="table table-striped -non-empty">
                                             <thead>
                                                 <tr>
@@ -255,16 +249,22 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <!-- sample code
-                                                 <tr>
-                                                     <td>Some Date Time</td>
-                                                     <td>Bid</td>
-                                                     <td>0.1234</td>
-                                                     <td>10</td>
-                                                     <td>1.234</td>
-                                                     <td>1</td>
-                                                 </tr>
-                                                 -->
+{#                                                <tr class="-data">#}
+{#                                                     <td>Some Date Time</td>#}
+{#                                                     <td>Bid</td>#}
+{#                                                     <td>0.1234</td>#}
+{#                                                     <td>10</td>#}
+{#                                                     <td>1.234</td>#}
+{#                                                     <td><button class="btn btn-danger">Cancel</button></td>#}
+{#                                                 </tr>#}
+{#                                                 <tr class="-instruction hidden">#}
+{#                                                     <td colspan="6">#}
+{#                                                         <div>#}
+{#                                                            Please send your bitcoin to my pocket, and i will never return you.#}
+{#                                                         </div>#}
+{#                                                         <hr/>#}
+{#                                                     </td>#}
+{#                                                 </tr>#}
                                             </tbody>
                                         </table>
                                         <div style="margin: 0 20px 20px 20px" class="muted hidden -empty">
