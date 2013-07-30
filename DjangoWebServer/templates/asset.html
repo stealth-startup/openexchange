@@ -23,7 +23,7 @@
 
                     <!-- Limit orders and Market orders -->
                     <ul class="nav nav-tabs" style="margin-left: 30px;">
-                        <li><a href="#limit_orders" data-toggle="tab">Limit Orders</a></li>
+                        <li class="active"><a href="#limit_orders" data-toggle="tab">Limit Orders</a></li>
                         <li><a href="#market_orders" data-toggle="tab">Market Orders</a></li>
                     </ul>
                     <div class="tab-content" style="min-height: 205px;">
@@ -237,12 +237,6 @@
                                         <em>You need to login to see your orders.</em>
                                     </div>
                                     <div class="hidden -logged-in">
-                                        <div class="-instructions">
-                                            <p class="label label-info info_buysell">
-                                                To clear your i-th order, send <em>...****.xxxxxxxx</em> of BTC to <span style="font-weight: 600">{{ clear_order_address }}</span>, where
-                                                i = xxxxxxxx.After your command is processed, your BTC will be send back to you.
-                                            </p>
-                                        </div>
                                         <table class="table table-striped -non-empty">
                                             <thead>
                                                 <tr>
@@ -251,20 +245,26 @@
                                                     <th>Unit price (BTC)</th>
                                                     <th>Amount</th>
                                                     <th>Total (BTC)</th>
-                                                    <th>Index</th>
+                                                    <th></th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <!-- sample code
-                                                 <tr>
-                                                     <td>Some Date Time</td>
-                                                     <td>Bid</td>
-                                                     <td>0.1234</td>
-                                                     <td>10</td>
-                                                     <td>1.234</td>
-                                                     <td>1</td>
-                                                 </tr>
-                                                 -->
+{#                                                <tr class="-data">#}
+{#                                                     <td>Some Date Time</td>#}
+{#                                                     <td>Bid</td>#}
+{#                                                     <td>0.1234</td>#}
+{#                                                     <td>10</td>#}
+{#                                                     <td>1.234</td>#}
+{#                                                     <td><button class="btn btn-danger">Cancel</button></td>#}
+{#                                                 </tr>#}
+{#                                                 <tr class="-instruction hidden">#}
+{#                                                     <td colspan="6">#}
+{#                                                         <div>#}
+{#                                                            Please send your bitcoin to my pocket, and i will never return you.#}
+{#                                                         </div>#}
+{#                                                         <hr/>#}
+{#                                                     </td>#}
+{#                                                 </tr>#}
                                             </tbody>
                                         </table>
                                         <div style="margin: 0 20px 20px 20px" class="muted hidden -empty">
@@ -509,13 +509,50 @@
         }
     }
 
+    function repopulate_my_orders(active_orders, e_non_empty, e_empty){
+        if (active_orders.length == 0){
+            e_empty.removeClass('hidden');
+            e_non_empty.addClass('hidden');
+        }
+        else{
+            e_empty.addClass('hidden');
+            e_non_empty.removeClass('hidden');
+            var e_tbody = e_non_empty.find("tbody");
+            e_tbody.empty();
+
+            $.each(active_orders, function(index,v){
+                $(('<tr class="-data">' +
+                        '<td>{0}</td>' +
+                        '<td>{1}</td>' +
+                        '<td>{2}</td>' +
+                        '<td>{3}</td>' +
+                        '<td>{4}</td>' +
+                        '<td><button class="btn btn-danger">Cancel</button></td>').format(
+                                v[0], v[1], v[2], v[3], v[4]
+                        )).appendTo(e_tbody);
+                $(('<tr class="-instruction hidden">' +
+                        '<td colspan="6">' +
+                        '<div>' +
+                        'Please send <em>{0}</em> BTC to {{ clear_order_address }} to cancel the above order. Your BTC will be send back to you after your command is processed.' +
+                        '</div>' +
+                        '<hr/>' +
+                        '</td>' +
+                        '</tr>').format((v[5]/100000000).toFixed(8))).appendTo(e_tbody);
+            });
+            e_tbody.find('button').click(function(){
+                e_tbody.find(".-instruction").addClass('hidden');
+                $(this).parent().parent().next().removeClass('hidden');
+            });
+        }
+    }
+
     function asset_login_callback(){
         var user_address = window.user;
         var asset_name = "{{ asset_name }}";
         $.getJSON("/asset-page-login/"+asset_name+'/'+user_address, function(data){
             $("#balance .-logged-in").html(data.balance);
             var e_user_orders = $("#my_orders");
-            repopulate_table(data.active_orders,e_user_orders.find('.-non-empty'), e_user_orders.find('.-empty'));
+            repopulate_my_orders(data.active_orders,e_user_orders.find('.-non-empty'), e_user_orders.find('.-empty'));
         });
     }
 

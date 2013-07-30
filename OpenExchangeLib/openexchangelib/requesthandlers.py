@@ -102,7 +102,8 @@ def _trade_general(buy_request, sell_request, buyer, seller, unit_price, volume,
     if isinstance(buy_request, BuyLimitOrderRequest) and initiate_action == TradeItem.TRADE_TYPE_BUY:
         buy_request.immediate_executed_trades.append(TradeItem(unit_price, volume, timestamp, TradeItem.TRADE_TYPE_BUY))
     if isinstance(sell_request, SellLimitOrderRequest) and initiate_action == TradeItem.TRADE_TYPE_SELL:
-        sell_request.immediate_executed_trades.append(TradeItem(unit_price, volume, timestamp, TradeItem.TRADE_TYPE_SELL))
+        sell_request.immediate_executed_trades.append(
+            TradeItem(unit_price, volume, timestamp, TradeItem.TRADE_TYPE_SELL))
 
     buyer.available += volume
     buyer.total += volume
@@ -795,8 +796,8 @@ def asset_state_control(transaction, service_address, block_timestamp, **kwargs)
     if exchange.open_exchange_address not in transaction.input_addresses:
         req.state = Request.STATE_FATAL
         req.message = AssetStateControlRequest.MSG_INPUT_ADDRESS_NOT_LEGIT
-    elif request_state not in [AssetStateControlRequest.STATE_RESUME, AssetStateControlRequest.STATE_PAUSE] \
-            and request_state % 10 != 3:
+    elif not (request_state in [AssetStateControlRequest.STATE_RESUME, AssetStateControlRequest.STATE_PAUSE] \
+                  or (request_state % 10 in [3, 4] and request_state // 10 > 0)):
         req.state = Request.STATE_FATAL
         req.message = AssetStateControlRequest.MSG_STATE_NOT_SUPPORTED
     else:
@@ -806,18 +807,77 @@ def asset_state_control(transaction, service_address, block_timestamp, **kwargs)
         elif request_state == AssetStateControlRequest.STATE_PAUSE:
             asset.state = Asset.STATE_PAUSED
             req.state = Request.STATE_OK
-        else:
-            assert request_state % 10 == 3
+        elif request_state % 10 == 3:  # change the whole asset
             if asset.state == Asset.STATE_RUNNING:
                 req.state = Request.STATE_FATAL
                 req.message = AssetStateControlRequest.MSG_CAN_NOT_REINIT_WHEN_RUNNING
             else:
-                assert asset.state == Asset.STATE_PAUSED
                 asset = kwargs['asset_init_data'][request_state // 10]
                 if not (isinstance(asset, Asset) and asset.state == Asset.STATE_PAUSED):
-                    raise InitDataError(asset=asset, asset_state=asset.state)
+                    raise InitDataError('Please consider republishing the data file', asset=asset,
+                                        asset_state=asset.state)
 
                 exchange.assets[kwargs['asset_name']] = asset
                 req.state = Request.STATE_OK
+        else:
+            assert request_state % 10 == 4  # partial change
+            updates = kwargs['asset_init_data'][request_state // 10]
+
+            #check data type and apply changes
+            if not isinstance(updates, list):
+                raise InitDataError('Please consider republishing the data file', updates=updates)
+            for u in updates:
+                if not isinstance(u, dict):
+                    raise InitDataError('Please consider republishing the data file', updates=updates)
+
+                op_type = u.get('type')
+                if op_type not in ['set', 'delete']:
+                    raise InitDataError('Please consider republishing the data file',
+                                        updates=updates, update=u, op_type=op_type)
+                attr_list = u.get('attr_list')
+                if not isinstance(attr_list, list):
+                    raise InitDataError('Please consider republishing the data file',
+                                        updates=updates, update=u, attr_list=attr_list)
+                for attr in attr_list:
+                    if not isinstance(attr, str):
+                        raise InitDataError('Please consider republishing the data file',
+                                            updates=updates, update=u, attr=attr)
+
+                host = exchange
+                if op_type == 'set':
+                    if 'obj' not in u:
+                        raise InitDataError('Please consider republishing the data file', 'obj not in set update',
+                                            updates=updates, update=u)
+                    obj = u['obj']
+
+                    try:
+                        for attr in attr_list[:-1]:
+                            if isinstance(host, dict):
+                                host = host[attr]
+                            else:
+                                host = getattr(host, attr)
+                        if isinstance(host, dict):
+                            host[attr_list[-1]] = obj
+                        else:
+                            setattr(host, attr_list[-1], obj)
+                    except Exception, e:
+                        raise InitDataError('Please consider republishing the data file',
+                                                    update=u, host=host, inner_exception=e)
+                else:
+                    assert op_type == 'delete'
+                    try:
+                        for attr in attr_list[:-1]:
+                            if isinstance(host, dict):
+                                host = host[attr]
+                            else:
+                                host = getattr(host, attr)
+                        if isinstance(host, dict):
+                            del host[attr_list[-1]]
+                        else:
+                            delattr(host, attr_list[-1])
+                    except Exception, e:
+                        raise InitDataError('Please consider republishing the data file',
+                                                    update=u, host=host, inner_exception=e)
+
 
     return req
