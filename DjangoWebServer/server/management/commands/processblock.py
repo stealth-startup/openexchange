@@ -8,8 +8,7 @@ from server.models import UserPayLog
 import pybit
 import pybit.settings as pybit_settings
 
-
-bitcoin_config_file = None
+bitcoin_config_file = '/mnt/openexchange/openexchange/Docs/bitcoin.conf'
 
 
 class Command(NoArgsCommand):

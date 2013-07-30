@@ -38,7 +38,7 @@ from decimal import Decimal
 
 PROJ_DIR = os.path.abspath(os.path.dirname(__file__))
 logger = util.get_logger('exchange_server', file_name=os.path.join(PROJ_DIR, 'exchange_server.log'))
-bitcoin_config_file = None
+bitcoin_config_file = '/mnt/openexchange/openexchange/Docs/bitcoin.conf' 
 
 
 def add_payment(all_payments, payments):

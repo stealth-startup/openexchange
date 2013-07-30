@@ -1,4 +1,6 @@
 \#*#
+DjangoWebServer/data/block/
+ExchangeServer/data/blocks/
 *.*~
 *.log
 *.py[cod]
