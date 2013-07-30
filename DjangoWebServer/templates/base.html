@@ -108,8 +108,17 @@
 
 <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
 <script type="text/javascript">
+    String.prototype.format = String.prototype.f = function() {
+        var s = this,
+            i = arguments.length;
+
+        while (i--) {
+            s = s.replace(new RegExp('\\{' + i + '\\}', 'gm'), arguments[i]);
+        }
+        return s;
+    };
+
     function check_transfer_dialog(max_transfer){
-        //TODO(optional): check if this is a bitcoin address
         var transfer_to_address = $.trim($("#transfer_to").val());
         var e_amount = $("#transfer_amount");
         var amount = Number(e_amount.val());
