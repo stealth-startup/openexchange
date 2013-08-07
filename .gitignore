@@ -5,6 +5,11 @@ ExchangeServer/data/blocks/
 *.log
 *.py[cod]
 *.sqlite3
+block
+assets
+blocks
+payments
+static_data
 
 # C extensions
 *.so
