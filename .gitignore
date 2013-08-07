@@ -6,7 +6,8 @@
 block
 assets
 blocks
-payment
+payments
+static_data
 
 # C extensions
 *.so
