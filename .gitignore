@@ -4,6 +4,10 @@
 *.py[cod]
 *.sqlite3
 block
+assets
+blocks
+payment
+
 # C extensions
 *.so
 
