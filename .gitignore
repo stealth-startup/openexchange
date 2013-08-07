@@ -3,7 +3,7 @@
 *.log
 *.py[cod]
 *.sqlite3
-blocks
+block
 # C extensions
 *.so
 
