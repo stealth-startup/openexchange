@@ -38,5 +38,27 @@ class Command(NoArgsCommand):
         dm.save_asset_data(['TEST', ASSET_TEST], 1)
         self.stdout.write('TEST asset saved')
 
+        self.stdout.write('Generating asset data - TEST2')
+        ASSET_TEST2 = oel_types.Asset(
+            total_shares=800000,
+            clear_order_address="moxT1cTs2Jn6Sodhv53QpxQkqKaVKkgSnv",
+            create_vote_address="n2uvtDcDLMrKx4t5cfjmV4cSnmhNqXeKeb",
+            issuer_address="n4pNgZx4J4Z2pyCAcNeMKddYJ7bz2qbGGP",
+            limit_buy_address="mt6sD1bHBQEpJ9tK2dEaVMT5xdqwAovvJr",
+            limit_sell_address="mtwfXuFjPgFdWumC92iAXWMJu2ACt1uHNe",
+            market_buy_address="mh6cnop2SFrpvJAYxTJ2Giw6ZrvjTE4cf8",
+            market_sell_address="mpyggDyWALrLihXKeZ1u3FShj2ihqLhad3",
+            pay_address="mgWFoZqFEsCXGDkiyiZhMz5XXJ8zf17Pc9",
+            state_control_address="myERW1mFdFLpUK9swMRULCwUqhkjCsNsEx",
+            transfer_address="mp81MKYpMgCsBfA2pZ3VgHwsMwrh81dvvR",
+            vote_address="mh5K3WWnKvZe48xt2VWP1xzVUMKprVmoo8",
+            users={
+                'mmy8qpLmZoxe1rSynrnx7k1XwHDm3BKpeQ': oel_types.User(initial_asset=800000),  # main holder
+            }
+        )
+
+        dm.save_asset_data(['TEST2', ASSET_TEST2], 2)
+        self.stdout.write('TEST2 asset saved')
+
         self.stdout.write('all done')
 
