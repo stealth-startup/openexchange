@@ -615,7 +615,6 @@ def transfer(transaction, service_address, block_timestamp, **kwargs):
     :type block_timestamp: datetime
     :rtype: Request
     """
-    service_address = kwargs['service_address']
     user_address = transaction.input_addresses[0]
 
     targets = {}
