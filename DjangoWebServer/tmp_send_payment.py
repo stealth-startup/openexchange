@@ -12,7 +12,6 @@ TEST_MainHolder = 'mmy8qpLmZoxe1rSynrnx7k1XwHDm3BKpeQ'
 TEST_LimitSell = 'mmYt5cVNcFmrDvSBf6erYYeypnZTH4c8Xk'
 TEST_LimitBuy = 'mptmhH4UzgS3cJ35qmjqNaGWa15UPoE3fy'
 
-user3 = 'n2uvtDcDLMrKx4t5cfjmV4cSnmhNqXeKeb'
 main_holder = 'mmy8qpLmZoxe1rSynrnx7k1XwHDm3BKpeQ'
 
 # print pybit.send_from_local(
@@ -29,7 +28,6 @@ main_holder = 'mmy8qpLmZoxe1rSynrnx7k1XwHDm3BKpeQ'
 #
 # print pybit.send_from_local(
 #     payments={
-#         #set openexchange to running state
 #         'mptmhH4UzgS3cJ35qmjqNaGWa15UPoE3fy ': Decimal('1.600002'),
 #     },
 #     from_addresses=[user3],

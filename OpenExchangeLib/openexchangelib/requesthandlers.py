@@ -679,9 +679,13 @@ def create_vote(transaction, service_address, block_timestamp, **kwargs):
 
     #this won't affect any thing in asset, so we don't care whether all these inputs are legit for now
     index = len(asset.votes) + 1
+    
+    try:
+        expire_time = block_timestamp + timedelta(days=n_days_expiration)
+    except:
+        expire_time = None
 
-    req = CreateVoteRequest(transaction, service_address, block_timestamp,
-                            block_timestamp + timedelta(days=n_days_expiration), index)
+    req = CreateVoteRequest(transaction, service_address, block_timestamp, expire_time, index)
 
     if asset.issuer_address != user_address:
         req.state = Request.STATE_FATAL
