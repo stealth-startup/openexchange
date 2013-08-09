@@ -85,6 +85,9 @@ def process_block(exchange, block, asset_init_data=None):
 
     assert isinstance(block, Block)
     for tx in block.transactions:
+        if exchange.open_exchange_address in tx.input_addresses:
+            continue
+
         for n, address, sbtc_amount in tx.outputs:  # a transaction can have multiple purposes
             if address in service_dict:
                 asset_name, asset, handler = service_dict[address]
