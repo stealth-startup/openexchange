@@ -11,8 +11,8 @@
                     <div id="asset_chart" style="height:400px;" class="span8">
                     </div>
                     <!-- balance -->
-                    <div id="balance" class="span8" style="margin-top: 20px; margin-bottom: 4px;">
-                            <div class="label" style="font-size: 16px; line-height: 26px; display: block">
+                    <div id="balance" class="span8 hidden" style="margin-top: 20px; margin-bottom: 4px">
+                            <div class="label" style="font-size: 16px; line-height: 26px; display: block; background-color:#020031">
                                 Your balance:
                                 <span class="hidden -logged-in"></span>
                                 <span class="hidden -logged-out" style="font-size: 14px">
@@ -21,13 +21,75 @@
                             </div>
                     </div>
 
-                    <!-- Limit orders and Market orders -->
+                    <!-- Market orders and Limit orders -->
                     <ul class="nav nav-tabs" style="margin-left: 30px;">
-                        <li class="active"><a href="#limit_orders" data-toggle="tab">Limit Orders</a></li>
-                        <li><a href="#market_orders" data-toggle="tab">Market Orders</a></li>
+                        <li class="active"><a href="#market_orders" data-toggle="tab"><h4>Market Orders</h4></a></li>
+                        <li><a href="#limit_orders" data-toggle="tab"><h4>Limit Orders</h4></a></li>
                     </ul>
                     <div class="tab-content" style="min-height: 205px;">
-                        <div class="tab-pane active" id="limit_orders">  <!-- limit orders -->
+                        <div class="tab-pane active" id="market_orders"> <!-- market orders -->
+                            <!-- market buy form -->
+                            <div class="span4" id="market_buy_form">
+                                <div class="boundary">
+                                    <div class="widget_title">Market Buy</div>
+                                    <form class="form-horizontal">
+                                        <div class="control-group">
+                                            <label class="control-label" for="market_buy_total" style="width: 80px">Total Invest</label>
+                                            <div class="controls" style="margin-left: 100px">
+                                                <div class="input-append">
+                                                    <input type="text" id="market_buy_total" placeholder="0" value="0" style="width: 150px">
+                                                    <span class="add-on">BTC</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="control-group">
+                                            <div class="controls">
+                                                <div class="btn pull-right -calculate" style="margin-right: 63px">Calculate</div>
+                                            </div>
+                                        </div>
+                                        <div class="-message">
+                                            <p class="instruction hidden -success">
+                                                Send <span class="-payment" style="font-weight: 600"></span> BTC to
+                                                <span style="font-weight: 600">{{ market_buy_address }}</span> for buying at the market price.
+                                                After your order is confirmed, it will be executed immediately,
+                                                and the change, if there's any, will be sent back to you.
+                                            </p>
+                                            <p class="error badge badge-warning hidden -error"></p>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            <!-- market sell form -->
+                            <div class="span4" id="market_sell_form">
+                                <div class="boundary">
+                                    <div class="widget_title">Market Sell</div>
+                                    <form class="form-horizontal">
+                                        <div class="control-group">
+                                            <label class="control-label" for="market_sell_amount" style="width: 80px">Amount</label>
+                                            <div class="controls" style="margin-left: 100px">
+                                                <input type="text" id="market_sell_amount" placeholder="0" value="0" style="width: 190px">
+                                            </div>
+                                        </div>
+                                        <div class="control-group">
+                                            <div class="controls">
+                                                <div class="btn pull-right -calculate" style="margin-right: 63px">Calculate</div>
+                                            </div>
+                                        </div>
+                                        <div class="-message">
+                                            <p class="instruction hidden -success">
+                                                Send <span class="-payment" style="font-weight: 600"></span> BTC to
+                                                <span style="font-weight: 600">{{ market_sell_address }}</span> for selling.
+                                                After your order is confirmed, it will be executed immediately,
+                                                and the change of <span class="-change" style="font-weight: 600"></span>
+                                                BTC will be sent back to you.
+                                            </p>
+                                            <p class="error badge badge-warning hidden -error"></p>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane" id="limit_orders">  <!-- limit orders -->
                             <!-- limit buy form -->
                             <div class="span4" id="limit_buy_form">
                                 <div class="boundary">
@@ -54,14 +116,14 @@
                                             </div>
                                         </div>
                                         <div class="-message">
-                                            <p class="label label-info info_buysell hidden -success">
+                                            <p class="instruction hidden -success">
                                                 Send <span class="-payment" style="font-weight: 600"></span> BTC to
                                                 <span style="font-weight: 600">{{ limit_buy_address }}</span> for buying.
                                                 After your order is confirmed, it will be listed in the order book for execution,
                                                 and the change of <span class="-change" style="font-weight: 600"></span>
                                                 BTC will be sent back to you.
                                             </p>
-                                            <p class="badge badge-warning info_buysell hidden -error"></p>
+                                            <p class="error badge badge-warning hidden -error"></p>
                                         </div>
                                     </form>
                                 </div>
@@ -92,76 +154,14 @@
                                             </div>
                                         </div>
                                         <div class="-message">
-                                            <p class="label label-info info_buysell hidden -success">
+                                            <p class="instruction hidden -success">
                                                 Send <span class="-payment" style="font-weight: 600"></span> BTC to
                                                 <span style="font-weight: 600">{{ limit_sell_address }}</span> for selling.
                                                 After your order is confirmed, it will be listed the order book for execution,
                                                 and the change of <span class="-change" style="font-weight: 600"></span>
                                                 BTC will be sent back to you.
                                             </p>
-                                            <p class="badge badge-warning info_buysell hidden -error"></p>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="tab-pane" id="market_orders"> <!-- market orders -->
-                            <!-- market buy form -->
-                            <div class="span4" id="market_buy_form">
-                                <div class="boundary">
-                                    <div class="widget_title">Market Buy</div>
-                                    <form class="form-horizontal">
-                                        <div class="control-group">
-                                            <label class="control-label" for="market_buy_total" style="width: 80px">Total Invest</label>
-                                            <div class="controls" style="margin-left: 100px">
-                                                <div class="input-append">
-                                                    <input type="text" id="market_buy_total" placeholder="0" value="0" style="width: 150px">
-                                                    <span class="add-on">BTC</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="control-group">
-                                            <div class="controls">
-                                                <div class="btn pull-right -calculate" style="margin-right: 63px">Calculate</div>
-                                            </div>
-                                        </div>
-                                        <div class="-message">
-                                            <p class="label label-info info_buysell hidden -success">
-                                                Send <span class="-payment" style="font-weight: 600"></span> BTC to
-                                                <span style="font-weight: 600">{{ market_buy_address }}</span> for buying at the market price.
-                                                After your order is confirmed, it will be executed immediately,
-                                                and the change, if there's any, will be sent back to you.
-                                            </p>
-                                            <p class="badge badge-warning info_buysell hidden -error"></p>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                            <!-- market sell form -->
-                            <div class="span4" id="market_sell_form">
-                                <div class="boundary">
-                                    <div class="widget_title">Market Sell</div>
-                                    <form class="form-horizontal">
-                                        <div class="control-group">
-                                            <label class="control-label" for="market_sell_amount" style="width: 80px">Amount</label>
-                                            <div class="controls" style="margin-left: 100px">
-                                                <input type="text" id="market_sell_amount" placeholder="0" value="0" style="width: 190px">
-                                            </div>
-                                        </div>
-                                        <div class="control-group">
-                                            <div class="controls">
-                                                <div class="btn pull-right -calculate" style="margin-right: 63px">Calculate</div>
-                                            </div>
-                                        </div>
-                                        <div class="-message">
-                                            <p class="label label-info info_buysell hidden -success">
-                                                Send <span class="-payment" style="font-weight: 600"></span> BTC to
-                                                <span style="font-weight: 600">{{ market_sell_address }}</span> for selling.
-                                                After your order is confirmed, it will be executed immediately,
-                                                and the change of <span class="-change" style="font-weight: 600"></span>
-                                                BTC will be sent back to you.
-                                            </p>
-                                            <p class="badge badge-warning info_buysell hidden -error"></p>
+                                            <p class="error badge badge-warning hidden -error"></p>
                                         </div>
                                     </form>
                                 </div>
@@ -375,27 +375,25 @@
         var error = '';
 
         if (!(limit_buy_amount>=0 && limit_buy_amount<=9999)) {
-            e_limit_buy_amount.val(0);
             error += 'Amount is a positive integer between 0 and 9999<br/>';
         } else {
             e_limit_buy_amount.val(limit_buy_amount);
         }
         if (!(limit_buy_price>=0)){
-            e_limit_buy_price.val(0);
-            error += 'unit price must be non-negative<br/>';
+            error += 'unit price must be a positive number<br/>';
         } else {
             e_limit_buy_price.val(limit_buy_price.toFixed(4));
             limit_buy_price = parseFloat(e_limit_buy_price.val());
         }
 
-        if (limit_buy_amount==0 || limit_buy_price==0){
-            e_message_success.addClass('hidden');
-            e_message_error.addClass('hidden');
-        }
-        else if (error!=''){
+        if (error!=''){
             e_message_success.addClass('hidden');
             e_message_error.removeClass('hidden');
             e_message_error.html(error);
+        }
+        else if (limit_buy_amount==0 || limit_buy_price==0){
+            e_message_success.addClass('hidden');
+            e_message_error.addClass('hidden');
         }
         else{
             e_message_error.addClass('hidden');
@@ -416,27 +414,26 @@
         var error = '';
 
         if (!(limit_sell_amount>=0 && limit_sell_amount<=9999)) {
-            e_limit_sell_amount.val(0);
             error += 'Amount is a positive integer between 0 and 9999<br/>';
         } else {
             e_limit_sell_amount.val(limit_sell_amount);
         }
         if (!(limit_sell_price>=0)){
-            e_limit_sell_price.val(0);
-            error += 'unit price must be non-negative<br/>';
+            error += 'unit price must be a positive number<br/>';
         } else {
             e_limit_sell_price.val(limit_sell_price.toFixed(4));
             limit_sell_price = parseFloat(e_limit_sell_price.val());
         }
 
-        if (limit_sell_amount==0 || limit_sell_price==0){
-            e_message_success.addClass('hidden');
-            e_message_error.addClass('hidden');
-        }
-        else if (error!=''){
+
+        if (error!=''){
             e_message_success.addClass('hidden');
             e_message_error.removeClass('hidden');
             e_message_error.html(error);
+        }
+        else if (limit_sell_amount==0 || limit_sell_price==0){
+            e_message_success.addClass('hidden');
+            e_message_error.addClass('hidden');
         }
         else{
             e_message_error.addClass('hidden');
@@ -455,20 +452,19 @@
         var error = '';
 
         if (!(market_buy_total>=0)) {
-            e_market_buy_total.val(0);
             error += 'Invest must be a positive number.<br/>';
         } else {
             e_market_buy_total.val(market_buy_total);
         }
 
-        if (market_buy_total==0){
-            e_message_success.addClass('hidden');
-            e_message_error.addClass('hidden');
-        }
-        else if (error!=''){
+        if (error!=''){
             e_message_success.addClass('hidden');
             e_message_error.removeClass('hidden');
             e_message_error.html(error);
+        }
+        else if (market_buy_total==0){
+            e_message_success.addClass('hidden');
+            e_message_error.addClass('hidden');
         }
         else{
             e_message_error.addClass('hidden');
@@ -486,20 +482,19 @@
         var error = '';
 
         if (!(market_sell_amount>=0)) {
-            e_market_sell_amount.val(0);
-            error += 'Amount must be a non-negative number.<br/>';
+            error += 'Amount must be a positive number.<br/>';
         } else {
             e_market_sell_amount.val(market_sell_amount);
         }
 
-        if (market_sell_amount==0){
-            e_message_success.addClass('hidden');
-            e_message_error.addClass('hidden');
-        }
-        else if (error!=''){
+        if (error!=''){
             e_message_success.addClass('hidden');
             e_message_error.removeClass('hidden');
             e_message_error.html(error);
+        }
+        else if (market_sell_amount==0){
+            e_message_success.addClass('hidden');
+            e_message_error.addClass('hidden');
         }
         else{
             e_message_error.addClass('hidden');
@@ -533,9 +528,10 @@
                 $(('<tr class="-instruction hidden">' +
                         '<td colspan="6">' +
                         '<div>' +
+                        '<p class="instruction">' +
                         'Please send <em>{0}</em> BTC to {{ clear_order_address }} to cancel the above order. Your BTC will be send back to you after your command is processed.' +
+                        '</p>'+
                         '</div>' +
-                        '<hr/>' +
                         '</td>' +
                         '</tr>').format((v[5]/100000000).toFixed(8))).appendTo(e_tbody);
             });
