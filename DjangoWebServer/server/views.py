@@ -168,6 +168,23 @@ def chart_data(request, asset_name):
                         mimetype="application/json")
 
 
+def vote_status(request, asset_name, vote_id):
+    chained_state = ChainedState.get_latest_state()
+    try:
+        vote = chained_state.exchange.assets[asset_name].votes[int(vote_id)]
+    except:
+        vote = types.Vote(start_time=None,expire_time=None,vote_stat={})
+
+    data = {
+        'start_time': None if vote.start_time is None else vote.start_time.strftime("%a, %d-%b-%Y %H:%M:%S GMT"),
+        'expire_time': None if vote.expire_time is None else vote.expire_time.strftime("%a, %d-%b-%Y %H:%M:%S GMT"),
+        'stat': vote.vote_stat
+    }
+
+    return HttpResponse(json.dumps(data), mimetype="application/json")
+
+
+
 def asset_order_book(request, asset_name):
     return HttpResponse(json.dumps(ChainedState.get_latest_state().order_book.get(asset_name, {'ask': [], 'bid': []})),
                         mimetype="application/json")
