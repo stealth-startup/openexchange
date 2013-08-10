@@ -715,7 +715,7 @@ def user_vote(transaction, service_address, block_timestamp, **kwargs):
 
     sbtc_amount = kwargs['sbtc_amount']
     index = sbtc_amount % 1000
-    option = index // 1000
+    option = sbtc_amount // 1000
 
     user_address = transaction.input_addresses[0]
 
