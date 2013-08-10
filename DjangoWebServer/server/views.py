@@ -205,7 +205,7 @@ def recent_requests(request, asset_name):
         [
             d.block_timestamp.strftime("%d-%b-%Y %H:%M:%S GMT"),
             '<a href="http://blockchain.info/tx/%s" target="_blank">%s</a>' % (d.transaction.hash, d.transaction.hash[:20]+'...'),
-            '<a href="http://blockchain.info/address/%s" target="_blank>%s</a>' % (d.transaction.input_addresses[0], d.transaction.input_addresses[0]),
+            '<a href="http://blockchain.info/address/%s" target="_blank">%s</a>' % (d.transaction.input_addresses[0], d.transaction.input_addresses[0]),
             '<span class="label label-success">OK</span>' if d.state == types.Request.STATE_OK else '<span class="label label-important">Error</span>',
         ] for d in raw_data
     ]
