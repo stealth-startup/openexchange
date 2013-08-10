@@ -699,6 +699,7 @@ def create_vote(transaction, service_address, block_timestamp, **kwargs):
         assert index not in asset.votes
         asset.votes[index] = Vote(block_timestamp, req.expire_time, {})
         _add_payment(req, {user_address: sbtc_amount})
+        return req
 
 
 def user_vote(transaction, service_address, block_timestamp, **kwargs):
