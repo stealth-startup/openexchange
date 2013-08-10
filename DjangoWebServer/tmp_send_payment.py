@@ -12,30 +12,30 @@ TEST_MainHolder = 'mmy8qpLmZoxe1rSynrnx7k1XwHDm3BKpeQ'
 TEST_LimitSell = 'mmYt5cVNcFmrDvSBf6erYYeypnZTH4c8Xk'
 TEST_LimitBuy = 'mptmhH4UzgS3cJ35qmjqNaGWa15UPoE3fy'
 
-main_holder = 'mmy8qpLmZoxe1rSynrnx7k1XwHDm3BKpeQ'
+tester1 = 'mmxX1HBtcFXXvtRpZHxzkztrnL4EKs7SbJ'
 
-# print pybit.send_from_local(
-#     payments={
-#         #set openexchange to running state
-#         user3: Decimal('80'),
-#     },
-#     from_addresses=[main_holder],
-#     change_address=main_holder,
-#     fee=Decimal('0.001'),  # this is high enough in testnet
-#     return_signed_transaction=False,
-#     min_conf=0
-# )
-#
-# print pybit.send_from_local(
-#     payments={
-#         'mptmhH4UzgS3cJ35qmjqNaGWa15UPoE3fy ': Decimal('1.600002'),
-#     },
-#     from_addresses=[user3],
-#     change_address=user3,
-#     fee=Decimal('0.001'),  # this is high enough in testnet
-#     return_signed_transaction=False,
-#     min_conf=0
-# )
+
+print pybit.send_from_local(
+    payments={
+        'mptmhH4UzgS3cJ35qmjqNaGWa15UPoE3fy': Decimal('0.950001'),
+    },
+    from_addresses=[tester1],
+    change_address=tester1,
+    fee=Decimal('0.001'),  # this is high enough in testnet
+    return_signed_transaction=False,
+    min_conf=0
+)
+
+print pybit.send_from_local(
+    payments={
+        'miyMq1JH3e2kEjRSXRt8W9CgXkbwxXw35A ': Decimal('0.00000100'),
+    },
+    from_addresses=[tester1],
+    change_address=tester1,
+    fee=Decimal('0.001'),  # this is high enough in testnet
+    return_signed_transaction=False,
+    min_conf=0
+)
 
 
 # print pybit.send_from_local(

@@ -25,6 +25,21 @@ def save_data(obj, file_name, base):
     return util.save_obj(obj, file_name)
 
 
+def remove_data(file_name, base, silent=False):
+    """
+    :type file_name: str
+    :type base: str
+    """
+    full_name = os.path.join(base, file_name)
+    if not os.path.isfile(full_name):
+        if not silent:
+            raise DataFileDoesNotExistError(fname=file_name)
+        return False
+    else:
+        os.remove(full_name)
+        return True
+
+
 def asset_creation_data(index):
     """
     :type index: int
@@ -50,7 +65,7 @@ def _data_file_max_index(base):
         return max(indexes)
 
 
-def pop_exchange():
+def pop_exchange(remove=False):
     """
     :rtype: ExchangeServer
     """
@@ -58,7 +73,10 @@ def pop_exchange():
     if max_index is None:
         return None
     else:
-        return load_data(str(max_index), BLOCKS_FOLDER)
+        data = load_data(str(max_index), BLOCKS_FOLDER)
+        if remove:
+            remove_data(str(max_index), BLOCKS_FOLDER)
+        return data
 
 
 def push_exchange(exchange):

@@ -38,7 +38,8 @@ from decimal import Decimal
 
 PROJ_DIR = os.path.abspath(os.path.dirname(__file__))
 logger = util.get_logger('exchange_server', file_name=os.path.join(PROJ_DIR, 'exchange_server.log'))
-bitcoin_config_file = '/mnt/openexchange/openexchange/Docs/bitcoin.conf' 
+#bitcoin_config_file = '/mnt/openexchange/openexchange/Docs/bitcoin.conf'
+bitcoin_config_file = None
 
 
 def add_payment(all_payments, payments):
@@ -154,7 +155,18 @@ def process_next_block(min_confirmations=6):
     new_block = pybit.get_block_by_height(exchange.exchange.processed_block_height + 1,
                                           source=pybit_settings.SOURCE_LOCAL,
                                           config_file_name=bitcoin_config_file)
-    assert new_block.previous_hash == exchange.exchange.processed_block_hash
+
+    if new_block.previous_hash != exchange.exchange.processed_block_hash:
+        rpc = pybit.local_rpc_channel(bitcoin_config_file)
+        if rpc.getinfo().testnet:
+            util.write_log(logger, 'testnet is attacked. rewind one block')
+            dm.pop_exchange(remove=True)
+            del payment_records[new_block.height-1]
+            dm.save_payments(payment_records)
+            return
+        else:
+            raise RuntimeError('BlockChain is attacked')
+
     util.write_log(logger, 'processing the new block')
     requests = openexchangelib.process_block(exchange.exchange, new_block, dm.assets_data(exchange))
 
