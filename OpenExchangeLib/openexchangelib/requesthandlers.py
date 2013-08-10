@@ -586,7 +586,7 @@ def clear_order(transaction, service_address, block_timestamp, **kwargs):
         req.message = ClearOrderRequest.MSG_INDEX_IS_ZERO
         return req
     else:  # request is legit, start real execution
-        _add_payment(req, kwargs['sbtc_amount'])  # change
+        _add_payment(req, {req.user_address: kwargs['sbtc_amount']})  # change
 
         assert isinstance(user, User)
         if index not in user.active_orders:
@@ -698,7 +698,7 @@ def create_vote(transaction, service_address, block_timestamp, **kwargs):
     else:  # inputs are legit, start processing
         assert index not in asset.votes
         asset.votes[index] = Vote(block_timestamp, req.expire_time, {})
-        _add_payment(req, sbtc_amount)
+        _add_payment(req, {user_address: sbtc_amount})
 
 
 def user_vote(transaction, service_address, block_timestamp, **kwargs):
