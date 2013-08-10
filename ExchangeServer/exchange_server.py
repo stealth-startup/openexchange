@@ -176,7 +176,7 @@ def process_next_block(min_confirmations=6):
         if isinstance(req, oel_types.CreateAssetRequest) and req.state == oel_types.Request.STATE_OK:
             exchange.used_init_data_indexes.add(req.file_id)
         elif isinstance(req, oel_types.AssetStateControlRequest) and req.state == oel_types.Request.STATE_OK \
-            and req.request_state % 10 == 3:
+            and req.request_state % 10 in [3, 4]:
             exchange.used_init_data_indexes.add(req.request_state // 10)
 
     #6 aggregate all payments according to all the requests
