@@ -593,7 +593,7 @@ def clear_order(transaction, service_address, block_timestamp, **kwargs):
             req.message = ClearOrderRequest.MSG_ORDER_DOES_NOT_EXIST
         else:
             order = user.active_orders[index]
-            order.trade_history.add(TradeItem.trade_cancelled(block_timestamp))
+            order.trade_history.append(TradeItem.trade_cancelled(block_timestamp))
             del user.active_orders[index]
 
             assert isinstance(order, BuyLimitOrderRequest) or isinstance(order, SellLimitOrderRequest)
