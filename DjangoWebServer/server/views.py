@@ -184,7 +184,7 @@ def recent_trades(request, asset_name):
     data = [
         [
             d.timestamp.strftime("%a, %d-%b-%Y %H:%M:%S GMT"),
-            d.trade_type,
+            'Buy' if d.trade_type == types.TradeItem.TRADE_TYPE_BUY else 'Sell',
             str(Decimal(d.unit_price) / 100000000),
             d.amount,
             str(Decimal(d.unit_price) * d.amount / 100000000),
@@ -198,7 +198,7 @@ def recent_requests(request, asset_name):
     :type asset_name: str
     """
     chained_state = ChainedState.get_latest_state()
-    raw_data = chained_state.recent_orders.get(asset_name, [])
+    raw_data = chained_state.recent_requests.get(asset_name, [])
     """:type: list of types.Request"""
 
     data = [
