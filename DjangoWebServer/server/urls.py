@@ -1,7 +1,7 @@
 from django.conf.urls import patterns, handler403, handler404, handler500, url
 from server.views import \
     home, market, help, account, asset, \
-    auth, recent_trades, asset_order_book, chart_data, asset_page_login, \
+    auth, recent_trades, asset_order_book, chart_data, asset_page_login, recent_requests, \
     page_not_found_404, server_error_500, forbidden_403
 
 # Uncomment the next two lines to enable the admin:
@@ -26,6 +26,7 @@ urlpatterns = patterns('',
        (r'^asset-page-login/(?P<asset_name>[A-Za-z\-_0-9]+)/(?P<user_address>[A-Za-z0-9_]+)$', asset_page_login),
        (r'^user/auth$', auth),
        (r'^asset/(?P<asset_name>[A-Za-z\-_0-9]+)/recent-trades$', recent_trades),
+       (r'^asset/(?P<asset_name>[A-Za-z\-_0-9]+)/recent-requests', recent_requests),
        ##################### for local testing, delete or comment out these handlers in production
         (r'^403$', handler403),
         (r'^404$', handler404),

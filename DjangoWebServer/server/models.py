@@ -30,6 +30,8 @@ class ChainedState(object):
         """:type: list"""
         self.recent_trades = kwargs.get('recent_trades', {})
         """:type: dict from str to list of TradeItem"""
+        self.recent_requests = kwargs.get('recent_requests', {})  # asset related orders
+        """:type: dict from str to list of Request"""
         self.order_book = kwargs.get('order_book', {})
         """:type: dict"""
         self.chart_data = kwargs.get('chart_data', {})

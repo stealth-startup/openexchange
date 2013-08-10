@@ -73,6 +73,18 @@ class Command(NoArgsCommand):
         for req in requests:
             assert req.state != types.Request.STATE_NOT_PROCESSED
 
+            assert isinstance(req.transaction, types.Transaction)
+            user_address = req.transaction.input_addresses[0]
+            asset_name = address_book[req.service_address][0]
+
+            #asset related requests
+            if asset_name is not None:
+                if asset_name not in chained_state.recent_requests:
+                    chained_state.recent_requests[asset_name] = []
+                chained_state.recent_requests[asset_name].insert(0, req)
+                if len(chained_state.recent_requests[asset_name]) > 50:
+                    chained_state.recent_requests[asset_name] = chained_state.recent_requests[asset_name][0:50]
+
             #failed requests history
             if req.state == types.Request.STATE_FATAL:
                 chained_state.failed_requests.append(req)
@@ -81,12 +93,8 @@ class Command(NoArgsCommand):
             #used file ids
             if isinstance(req, types.CreateAssetRequest):
                 chained_state.used_asset_init_ids.add(req.file_id)
-            if isinstance(req, types.AssetStateControlRequest) and req.request_state%10 == 3:  # TODO upgrade protocol
+            if isinstance(req, types.AssetStateControlRequest) and req.request_state%10 in [3, 4]:
                 chained_state.used_asset_init_ids.add(req.request_state // 10)
-
-            assert isinstance(req.transaction, types.Transaction)
-            user_address = req.transaction.input_addresses[0]
-            asset_name = address_book[req.service_address][0]
 
             #exchange history
             if isinstance(req, (types.CreateAssetRequest, types.ExchangeStateControlRequest)):

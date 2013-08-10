@@ -193,6 +193,25 @@ def recent_trades(request, asset_name):
     return HttpResponse(json.dumps(data), mimetype="application/json")
 
 
+def recent_requests(request, asset_name):
+    """
+    :type asset_name: str
+    """
+    chained_state = ChainedState.get_latest_state()
+    raw_data = chained_state.recent_orders.get(asset_name, [])
+    """:type: list of types.Request"""
+
+    data = [
+        [
+            d.block_timestamp.strftime("%a, %d-%b-%Y %H:%M:%S GMT"),
+            '<a href="http://blockchain.info/tx/%s">%s</a>' % (d.transaction.hash, d.transaction.hash),
+            '<a href="http://blockchain.info/address//%s">%s</a>' % (d.transaction.input_addresses[0], d.transaction.input_addresses[0]),
+            '<span class="label label-success">OK</span>' if d.state == types.Request.STATE_OK else '<span class="label label-important">Error</span>',
+        ] for d in raw_data
+    ]
+    return HttpResponse(json.dumps(data), mimetype="application/json")
+
+
 def asset_page_login(request, asset_name, user_address):
     """
     :type asset_name: str

@@ -277,7 +277,7 @@
                     </div>
 
                     <!-- recent trades -->
-                    <div class="span8" style="margin-top: 20px; margin-bottom: 20px" id="recent_trades">
+                    <div class="span8" style="margin-top: 20px;" id="recent_trades">
                         <div class="boundary">
                             <div class="widget_title">Recent Trades</div>
                             <div class="row">
@@ -306,6 +306,40 @@
                                     </table>
                                     <div style="margin: 0 20px 20px 20px" class="muted hidden -empty">
                                         <em>No trades yet.</em>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- recent requests -->
+                    <div class="span8" style="margin-top: 20px; margin-bottom: 20px" id="recent_requests">
+                        <div class="boundary">
+                            <div class="widget_title">Recent Requests</div>
+                            <div class="row">
+                                <div class="span8" style="max-height: 600px; overflow: auto">
+                                    <table class="table table-striped hidden -non-empty">
+                                        <thead>
+                                            <tr>
+                                                <th>Time</th>
+                                                <th>Transaction Hash</th>
+                                                <th>Sender</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- sample code
+                                             <tr>
+                                                 <td>Some Date Time</td>
+                                                 <td>1230fcnw92nc</td>
+                                                 <td>ca39vndcjd9cd</td>
+                                                 <td>Bad</td>
+                                             </tr>
+                                             -->
+                                        </tbody>
+                                    </table>
+                                    <div style="margin: 0 20px 20px 20px" class="muted hidden -empty">
+                                        <em>No requests yet.</em>
                                     </div>
                                 </div>
                             </div>
@@ -360,6 +394,15 @@
             var e_recent_trades = $("#recent_trades");
             var e_non_empty = e_recent_trades.find(".-non-empty");
             var e_empty = e_recent_trades.find(".-empty");
+            repopulate_table(data, e_non_empty, e_empty);
+        });
+    }
+
+    function init_recent_requests(){
+        $.getJSON("/asset/"+asset_name+'/recent-requests', function(data){
+            var e_recent_requests = $("#recent_requests");
+            var e_non_empty = e_recent_requests.find(".-non-empty");
+            var e_empty = e_recent_requests.find(".-empty");
             repopulate_table(data, e_non_empty, e_empty);
         });
     }
@@ -591,6 +634,7 @@
 
         draw_chart("asset_chart","/chart-data/"+asset_name,null,"stock-price-volume",true);
         init_recent_trades();
+        init_recent_requests();
 
         auth("login");
         populate_orders_callback();
