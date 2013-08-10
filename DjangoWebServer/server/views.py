@@ -117,7 +117,8 @@ def account(request, asset_name, user_address):
         failures = []
     if failures:
         failures_html = "<ul>%s</ul>" % (''.join(
-            ["<li>%s transaction hash: %s</li>" % (helpers.format_time(o.block_timestamp), o.transaction.hash) for
+            ["<li>%s  Transaction hash: <a href=\"http://blockchain.info/tx/%s\" target=\"_blank\">%s</a></li>" %
+             (helpers.format_time(o.block_timestamp), o.transaction.hash, o.transaction.hash) for
              o in failures]))
     else:
         failures_html = ""  # we don't display the failure tag, this value is used in the template

@@ -17,12 +17,12 @@
                 <div class="tab-pane active" id="log_trade">
                     {{ trade_html|safe }}
                 </div>
-                <div class="tab-pane active" id="log_pay">
+                <div class="tab-pane" id="log_pay">
                     {{ pay_html|safe }}
                 </div>
                 {% if failures_html != "" %}
-                    <div class="tab-pane active" id="log_failure">
-                        {{ failure_html|safe }}
+                    <div class="tab-pane" id="log_failure">
+                        {{ failures_html|safe }}
                     </div>
                 {% endif %}
             </div>
