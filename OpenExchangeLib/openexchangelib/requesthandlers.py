@@ -846,7 +846,7 @@ def asset_state_control(transaction, service_address, block_timestamp, **kwargs)
                         raise InitDataError('Please consider republishing the data file',
                                             updates=updates, update=u, attr=attr)
 
-                host = exchange
+                host = asset
                 if op_type == 'set':
                     if 'obj' not in u:
                         raise InitDataError('Please consider republishing the data file', 'obj not in set update',
@@ -881,6 +881,5 @@ def asset_state_control(transaction, service_address, block_timestamp, **kwargs)
                     except Exception, e:
                         raise InitDataError('Please consider republishing the data file',
                                                     update=u, host=host, inner_exception=e)
-
 
     return req
