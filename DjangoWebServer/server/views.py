@@ -79,7 +79,7 @@ def account(request, asset_name, user_address):
             elif isinstance(obj, UserPayLog):
                 return "<li>%s DPS = %f BTC, share number = %d, payment received = %f BTC</li>" % \
                        (helpers.format_time(obj.block_timestamp), obj.DPS / OneHundredMillionF, obj.share_N,
-                        obj.DPS * obj.share_N)
+                        obj.DPS * obj.share_N / OneHundredMillionF)
             elif isinstance(obj, types.TradeItem) and obj.trade_type == types.TradeItem.TRADE_TYPE_CANCELLED:
                 return "<li>Canceled by user</li>"
             elif isinstance(obj, types.TradeItem) and obj.trade_type != types.TradeItem.TRADE_TYPE_CANCELLED:
@@ -112,7 +112,7 @@ def account(request, asset_name, user_address):
         pay_html = "<ul><li>Empty</li></ul>"
 
     try:
-        failures = [t for t in chained_state.failed_requests if t.transaction.input_address == user_address]
+        failures = [t for t in chained_state.failed_requests if t.transaction.input_addresses[0] == user_address]
     except:
         failures = []
     if failures:
