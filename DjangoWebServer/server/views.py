@@ -185,9 +185,9 @@ def recent_trades(request, asset_name):
         [
             d.timestamp.strftime("%a, %d-%b-%Y %H:%M:%S GMT"),
             d.trade_type,
-            str(Decimal(d.unit_price) / Decimal(100000000.0)),
+            str(Decimal(d.unit_price) / 100000000),
             d.amount,
-            str(Decimal(d.unit_price) / Decimal(100000000.0) * Decimal(d.amount)),
+            str(Decimal(d.unit_price) * d.amount / 100000000),
         ] for d in raw_data
     ]
     return HttpResponse(json.dumps(data), mimetype="application/json")
@@ -215,9 +215,9 @@ def asset_page_login(request, asset_name, user_address):
             'active_orders': [[
                                   order.block_timestamp.strftime("%a, %d-%b-%Y %H:%M:%S GMT"),  # time
                                   'Buy' if isinstance(order, types.BuyLimitOrderRequest) else 'Sell',  # type
-                                  str(Decimal(order.unit_price) / Decimal(100000000.0)),  # unit_price
+                                  str(Decimal(order.unit_price) / 100000000),  # unit_price
                                   order.volume_unfulfilled,  # amount
-                                  str(Decimal(order.volume_unfulfilled) * Decimal(order.unit_price) / Decimal(100000000.0)),  # total btc
+                                  str(Decimal(order.volume_unfulfilled) * order.unit_price / 100000000),  # total btc
                                   idx  # index
                               ] for idx, order in user.active_orders.iteritems()]
         }
