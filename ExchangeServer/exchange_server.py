@@ -63,17 +63,27 @@ def add_payment(all_payments, payments):
 MAX_PAYMENT_BATCH = 50
 
 
-def make_payments(payment_records, height, log_address, from_addresses, change_address):
+def make_payments(payment_records, height, exchange):
     """
+
+    :param payment_records:
+    :param height:
+    :param exchange:
     :type payment_records: list of tuple
     :type height: int
     """
     #make payments (may be multiple times), save payment_records
+    global amount
     record = payment_records[height]
     """:type: PaymentRecord"""
 
     if not record.unpaid:
         return
+
+    address_book = openexchangelib.address_book(exchange)
+    from_addresses = exchange.open_exchange_address
+    change_address = exchange.open_exchange_address
+    log_address = exchange.payment_log_address
 
     assert log_address not in record.unpaid
     batch_n = (len(record.unpaid) - 1) // MAX_PAYMENT_BATCH + 1
@@ -84,6 +94,11 @@ def make_payments(payment_records, height, log_address, from_addresses, change_a
 
     for batch in batches:
         batch[log_address] = height / Decimal('100000000')
+        #we don't want to make payment to addresses that in address_book, or this may lead to an infinite loop
+        batch = {address:amount for address, amount in batch.iteritems() if address not in address_book}
+        if not batch:
+            continue
+
         tx_hash, signed_tx = pybit.send_from_local(batch, from_addresses=from_addresses, change_address=change_address,
                                               fee=Decimal('0.0005'),
                                               return_signed_transaction=True, min_conf=0,
@@ -137,9 +152,7 @@ def process_next_block(min_confirmations=6):
         util.write_log(logger, 'unpaid payments are non-empty, is there anything go wrong last time?',
                        payment_record=payment_records[exchange.exchange.processed_block_height])
         make_payments(payment_records, exchange.exchange.processed_block_height,
-                      log_address=exchange.exchange.payment_log_address,
-                      from_addresses=exchange.exchange.open_exchange_address,
-                      change_address=exchange.exchange.open_exchange_address)
+                      exchange=exchange.exchange)
         return True
     else:
         util.write_log(logger, 'unpaid checking passed.')
@@ -217,9 +230,7 @@ def process_next_block(min_confirmations=6):
     #9 make payments
     util.write_log(logger, 'making payments')
     make_payments(payment_records, new_block.height,
-                  log_address=exchange.exchange.payment_log_address,
-                  from_addresses=exchange.exchange.open_exchange_address,
-                  change_address=exchange.exchange.open_exchange_address)
+                  exchange=exchange.exchange)
 
     util.write_log(logger, 'all done for block at height %d' % exchange.exchange.processed_block_height)
 
