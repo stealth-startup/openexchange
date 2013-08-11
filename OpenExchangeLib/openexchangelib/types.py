@@ -32,6 +32,18 @@ class Request(Printable):  # base class for all requests
         self.message = None
         self.related_payments = {}
 
+    def readable_message(self):
+        if self.message is None:
+            return 'OK'
+        elif self.message == self.MSG_STATE_NOT_AS_EXPECTED:
+            return 'wrong state'
+        elif self.message == self.MSG_IGNORED_SINCE_ASSET_PAUSED:
+            return 'asset is paused'
+        elif self.message == self.MSG_IGNORED_SINCE_EXCHANGE_PAUSED:
+            return 'exchange is paused'
+        else:
+            return 'unknown error'
+
     @classmethod
     def ignored_request(cls, transaction, service_address, block_timestamp, msg):
         """
@@ -61,6 +73,14 @@ class CreateAssetRequest(Request):
         super(CreateAssetRequest, self).__init__(transaction, service_address, block_timestamp)
         self.file_id = file_id
 
+    def readable_message(self):
+        if self.message == self.MSG_ASSET_ALREADY_REGISTERED:
+            return 'asset already registered'
+        elif self.message == self.MSG_INPUT_ADDRESS_NOT_LEGIT:
+            return 'wrong address'
+        else:
+            return Request.readable_message(self)
+
 
 class ExchangeStateControlRequest(Request):
     STATE_RESUME = 1  # request state, this will not conflict with Request.STATE_XX since they are in different use
@@ -79,6 +99,14 @@ class ExchangeStateControlRequest(Request):
         """
         super(ExchangeStateControlRequest, self).__init__(transaction, service_address, block_timestamp)
         self.request_state = request_state
+
+    def readable_message(self):
+        if self.message == self.MSG_STATE_NOT_SUPPORTED:
+            return 'wrong state'
+        elif self.message == self.MSG_INPUT_ADDRESS_NOT_LEGIT:
+            return 'wrong address'
+        else:
+            return Request.readable_message(self)
 
 
 class TradeItem(Printable):
@@ -134,6 +162,14 @@ class BuyLimitOrderRequest(Request):
         self.immediate_executed_trades = []  # this field is for recent-trades and chart-data
         """:type: list of TradeItem"""
 
+    def readable_message(self):
+        if self.message == self.MSG_ZERO_VOLUME:
+            return 'amount is zero'
+        elif self.message == self.MSG_UNIT_PRICE_ILLEGIT:
+            return 'wrong unit price'
+        else:
+            return Request.readable_message(self)
+
 
 class SellLimitOrderRequest(Request):
     # message ids starts from 10000
@@ -165,6 +201,18 @@ class SellLimitOrderRequest(Request):
         self.immediate_executed_trades = []  # this field is for recent-trades and chart-data
         """:type: list of TradeItem"""
 
+    def readable_message(self):
+        if self.message == self.MSG_ZERO_VOLUME:
+            return 'amount is zero'
+        elif self.message == self.MSG_UNIT_PRICE_ILLEGIT:
+            return 'wrong unit price'
+        elif self.message == self.MSG_USER_DOES_NOT_EXISTS:
+            return 'user does not exist'
+        elif self.message == self.MSG_NOT_ENOUGH_ASSET:
+            return 'not enough asset'
+        else:
+            return Request.readable_message(self)
+
 
 class BuyMarketOrderRequest(Request):
     # message ids starts from 10000
@@ -189,6 +237,12 @@ class BuyMarketOrderRequest(Request):
 
         self.trade_history = []
         """:type: list of TradeItem"""
+
+    def readable_message(self):
+        if self.message == self.MSG_ZERO_TOTAL_PRICE:
+            return 'zero invest'
+        else:
+            return Request.readable_message(self)
 
 
 class SellMarketOrderRequest(Request):
@@ -215,6 +269,16 @@ class SellMarketOrderRequest(Request):
         self.trade_history = []
         """:type: list of TradeItem"""
 
+    def readable_message(self):
+        if self.message == self.MSG_ZERO_TOTAL_VOLUME:
+            return 'zero amount'
+        elif self.message == self.MSG_USER_DOES_NOT_EXISTS:
+            return 'user does not exist'
+        elif self.message == self.MSG_AVAILABLE_ASSET_NOT_ENOUGH:
+            return 'not enough asset'
+        else:
+            return Request.readable_message(self)
+
 
 class ClearOrderRequest(Request):
     # message ids starts from 10000
@@ -232,6 +296,16 @@ class ClearOrderRequest(Request):
         super(ClearOrderRequest, self).__init__(transaction, service_address, block_timestamp)
         self.user_address = transaction.input_addresses[0]
         self.index = index
+
+    def readable_message(self):
+        if self.message == self.MSG_USER_DOES_NOT_EXISTS:
+            return 'user does not exist'
+        elif self.message == self.MSG_INDEX_IS_ZERO:
+            return 'order index is zero'
+        elif self.message == self.MSG_ORDER_DOES_NOT_EXIST:
+            return 'invalid order index'
+        else:
+            return Request.readable_message(self)
 
 
 class TransferRequest(Request):
@@ -252,6 +326,16 @@ class TransferRequest(Request):
         self.transfer_from = transaction.input_addresses[0]
         self.transfer_targets = transfer_targets
 
+    def readable_message(self):
+        if self.message == self.MSG_USER_DOES_NOT_EXISTS:
+            return 'user does not exist'
+        elif self.message == self.MSG_NO_VALID_TARGET:
+            return 'target invalid'
+        elif self.message == self.MSG_NOT_ENOUGH_ASSET:
+            return 'not enough asset'
+        else:
+            return Request.readable_message(self)
+
 
 class CreateVoteRequest(Request):
     # message ids starts from 10000
@@ -271,6 +355,16 @@ class CreateVoteRequest(Request):
 
         self.expire_time = expire_time
         self.index = index
+
+    def readable_message(self):
+        if self.message == self.MSG_SENDER_IS_NOT_ISSUER:
+            return 'invalid input address'
+        elif self.message == self.MSG_LAST_ZERO_DAYS:
+            return 'period of validity too short (0 day)'
+        elif self.message == self.MSG_NOT_ENOUGH_ASSET:
+            return 'not enough asset'
+        else:
+            return Request.readable_message(self)
 
 
 class UserVoteRequest(Request):
@@ -296,6 +390,18 @@ class UserVoteRequest(Request):
         self.index = index
         self.option = option
 
+    def readable_message(self):
+        if self.message == self.MSG_SENDER_IS_NOT_LEGIT:
+            return 'invalid user address'
+        elif self.message == self.MSG_VOTE_CLOSED:
+            return 'vote is already closed'
+        elif self.message == self.MSG_ALREADY_VOTED:
+            return 'multiple vote'
+        elif self.message == self.MSG_VOTE_DOES_NOT_EXIST:
+            return 'vote does not exist'
+        else:
+            return Request.readable_message(self)
+
 
 class PayRequest(Request):
 
@@ -315,6 +421,12 @@ class PayRequest(Request):
         self.pay_amount = pay_amount
         self.DPS = DPS
         self.change = change
+
+    def readable_message(self):
+        if self.message == self.MSG_PAYER_ILLEGIT:
+            return 'invalid payer'
+        else:
+            return Request.readable_message(self)
 
 
 class AssetStateControlRequest(Request):
@@ -337,6 +449,16 @@ class AssetStateControlRequest(Request):
         """
         super(AssetStateControlRequest, self).__init__(transaction, service_address, block_timestamp)
         self.request_state = request_state
+
+    def readable_message(self):
+        if self.message == self.MSG_STATE_NOT_SUPPORTED:
+            return 'invalid state'
+        elif self.message == self.MSG_INPUT_ADDRESS_NOT_LEGIT:
+            return 'invalid input address'
+        elif self.message == self.MSG_CAN_NOT_REINIT_WHEN_RUNNING:
+            return 'invalid state (must pause asset before whole re-initialization)'
+        else:
+            return Request.readable_message(self)
 
 
 class User(Printable):
