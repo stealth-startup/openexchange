@@ -174,7 +174,7 @@ def vote_status(request, asset_name, vote_id):
     try:
         vote = chained_state.exchange.assets[asset_name].votes[int(vote_id)]
     except:
-        vote = types.Vote(start_time=None,expire_time=None,vote_stat={})
+        vote = types.Vote(start_time=None, expire_time=None, vote_stat={})
 
     data = {
         'start_time': None if vote.start_time is None else vote.start_time.strftime("%a, %d-%b-%Y %H:%M:%S GMT"),
@@ -183,7 +183,6 @@ def vote_status(request, asset_name, vote_id):
     }
 
     return HttpResponse(json.dumps(data), mimetype="application/json")
-
 
 
 def asset_order_book(request, asset_name):
@@ -219,13 +218,12 @@ def recent_requests(request, asset_name):
     raw_data = chained_state.recent_requests.get(asset_name, [])
     """:type: list of types.Request"""
 
-    data = [
-        [
-            d.block_timestamp.strftime("%d-%b-%Y %H:%M:%S GMT"),
-            '<a href="http://blockchain.info/tx/%s" target="_blank">%s</a>' % (d.transaction.hash, d.transaction.hash[:20]+'...'),
-            '<a href="http://blockchain.info/address/%s" target="_blank">%s</a>' % (d.transaction.input_addresses[0], d.transaction.input_addresses[0]),
-            '<span class="label label-success">OK</span>' if d.state == types.Request.STATE_OK else '<span class="label label-important">Error</span>',
-        ] for d in raw_data
+    data = [{
+                'time': d.block_timestamp.strftime("%d-%b-%Y %H:%M:%S GMT"),
+                'tx': d.transaction.hash,
+                'in': d.transaction.input_addresses[0],
+                'error_msg': d.readable_message() if d.message else None
+            } for d in raw_data
     ]
     return HttpResponse(json.dumps(data), mimetype="application/json")
 
@@ -248,13 +246,14 @@ def asset_page_login(request, asset_name, user_address):
     else:
         user = assets[asset_name].users[user_address]
         data = {
-            'balance': 'Total:%d Available:%d In Order Book:%d' % (user.total, user.available, user.total - user.available),
+            'balance': 'Total:%d Available:%d In Order Book:%d' % (
+                user.total, user.available, user.total - user.available),
             'active_orders': [[
-                                  order.block_timestamp.strftime("%a, %d-%b-%Y %H:%M:%S GMT"),  # time
-                                  'Buy' if isinstance(order, types.BuyLimitOrderRequest) else 'Sell',  # type
-                                  str(Decimal(order.unit_price) / 100000000),  # unit_price
-                                  order.volume_unfulfilled,  # amount
-                                  str(Decimal(order.volume_unfulfilled) * order.unit_price / 100000000),  # total btc
+                                  order.block_timestamp.strftime("%a, %d-%b-%Y %H:%M:%S GMT"), # time
+                                  'Buy' if isinstance(order, types.BuyLimitOrderRequest) else 'Sell', # type
+                                  str(Decimal(order.unit_price) / 100000000), # unit_price
+                                  order.volume_unfulfilled, # amount
+                                  str(Decimal(order.volume_unfulfilled) * order.unit_price / 100000000), # total btc
                                   idx  # index
                               ] for idx, order in user.active_orders.iteritems()]
         }

@@ -403,7 +403,31 @@
             var e_recent_requests = $("#recent_requests");
             var e_non_empty = e_recent_requests.find(".-non-empty");
             var e_empty = e_recent_requests.find(".-empty");
-            repopulate_table(data, e_non_empty, e_empty);
+
+
+            if (data.length == 0){
+                e_empty.removeClass('hidden');
+                e_non_empty.addClass('hidden');
+            }
+            else{
+                e_empty.addClass('hidden');
+                e_non_empty.removeClass('hidden');
+                var e_tbody = e_non_empty.find("tbody");
+                e_tbody.empty();
+                $.each(data, function(index,v){  //v['time'] v['in'] v['tx'] v['status'] v['tooltip']
+                    $(('<tr>'+
+                            '<td>{0}</td>'+
+                            '<td><a href="http://blockchain.info/tx/{1}" target="_blank">{2}...</a></td>'+
+                            '<td><a href="http://blockchain.info/address/{3}" target="_blank">{3}</a></td>'+
+                            '<td><a class="label {4}" data-toggle="tooltip" title="{6}">{5}</a></td>'
+                            ).format(v['time'],
+                                    v['tx'], v['tx'].substr(0,20),
+                                    v['in'],
+                                    v['error_msg']?'label-important':'label-success',
+                                    v['error_msg']?'Error':'OK',
+                                    v['error_msg']?v['error_msg']:'OK')).appendTo(e_tbody)
+                });
+            }
         });
     }
 
