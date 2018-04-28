@@ -1,8 +1,8 @@
-*Induction
+# Induction
 
 OpenExchange is a platform for issuing, trading, and managing Bitcoin-nominated virtual securities. It utilizes the blockchain to a achieve higher level of security than exchanges using username-password systems. It also inherits both anonymity and transparency from the blockchain.
 
-*Definitions
+## Definitions
 
 Bitcoin: A virtual internet commodity not recognized as any legal tender.
 
@@ -14,7 +14,7 @@ OpenExchange(Website): A website that displays the information of all OpenExchan
 
 OpenExchange(Corporate Body): An internet group providing OpenExchange(Server) and OpenExchange(Website).
 
-*Statements
+## Statements
 
 OpenExchange(Server) recognizes specific blockchain transactions as user commands that issue, trade and manage virtual securities. This is its sole functionality and responisibility. 
 
@@ -26,7 +26,7 @@ OpenExchange(Corporate Body) does not involve in any form of legal tender relate
 
 OpenExchange(Server) charges no fee except the listing fee. Trading and payment are fee-free.
 
-*User Guide
+## User Guide
 
 You do not need to log in to use OpenExchange. But you will need a Bitcoin client or an online Bitcoin wallet. The Bitcoin address serves as your identity. Issuing, trading, or managing virtual securities are all done via sending certain amount of Bitcoins to a certain set of addresses allocated for each virtual security.
 
@@ -60,7 +60,7 @@ After being sent by Y Bitcoins, the total of Y Bitcoins will all be immediately 
 
 ***Transaction Fee - all commands are recognized from the amount of Bitcoins received by the address, not the total Bitcoins sent. So if you want the commands executed timely using transaction fee, you should add the fee yourself to the total amount.
 
-*Q&A:
+## Q&A:
 
 **Q: How do the virtual security shareholders vote?
 **A: This functionality is not fully implemented yet, since the design space is large and we haven't chosen on specific option.
