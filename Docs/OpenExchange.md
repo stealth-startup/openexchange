@@ -1,4 +1,4 @@
-# Induction
+# Introduction
 
 OpenExchange is a platform for issuing, trading, and managing Bitcoin-nominated virtual securities. It utilizes the blockchain to a achieve higher level of security than exchanges using username-password systems. It also inherits both anonymity and transparency from the blockchain.
 
@@ -38,9 +38,9 @@ You do not need to log in to use OpenExchange. But you will need a Bitcoin clien
 
 The bid order will be kept until fulfilled by sellers or cancelled by the buyer. When partly or full execution of the trade happens, the share number of the corresponding virtual security will increase by the amount of the happening trade. The share number is bound to the buyer-address.
 
-After being sent by X*Y + X*0.00000001 Bitcoins, the X*0.00000001 Bitcoins part will be immediately sent back. When the order is being kept, the X*Y Bitcoins part is held by OpenExchange(Server). When execution of order happens, the Bitcoins will be transferred to the seller according to the number of traded shares. On cancellation, the rest Bitcoins according to the number of remaining shares on the bid order.
+After being sent by **X*Y + X*0.00000001** Bitcoins, the X*0.00000001 Bitcoins part will be immediately sent back. When the order is being kept, the X*Y Bitcoins part is held by OpenExchange(Server). When execution of order happens, the Bitcoins will be transferred to the seller according to the number of traded shares. On cancellation, the rest Bitcoins according to the number of remaining shares on the bid order.
 
-**Ask**: Each virtual security will be bound with a Bitcoin address for asking (ask-address). To make an ask order of X shares each prices at Y Bitcoins, please send Y + X*0.00000001 Bitcoins to the ask-address. X should not exceed 9999. And Y should be a multiple of 0.0001. For example, 0.10000100 represents 100 shares each prices at 0.1 Bitcoin when asking. The source address sending the Bitcoins are called seller-address.
+**Ask**: Each virtual security will be bound with a Bitcoin address for asking (ask-address). To make an ask order of X shares each prices at Y Bitcoins, please send **Y + X*0.00000001** Bitcoins to the ask-address. X should not exceed 9999. And Y should be a multiple of 0.0001. For example, 0.10000100 represents 100 shares each prices at 0.1 Bitcoin when asking. The source address sending the Bitcoins are called seller-address.
 
 The ask order will be kept until fufilled by buyers or cancelled by the asker. When partly or full execution of the trade happens, the share number of the corresponding virtual security will decrease by the amount of the happening trade. The share number is bound to the seller-address.
 
